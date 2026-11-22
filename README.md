@@ -68,6 +68,8 @@ um valor de configuracao para esse export, sem conta Apple ou certificado.
 `scripts/build-ios-unsigned.sh` exporta o projeto em Linux; em macOS com Xcode,
 tambem compila com assinatura desabilitada e empacota `FPVRacer-unsigned.ipa`.
 Um IPA sem assinatura **nao instala diretamente**.
+O template oficial de Godot 4.7.2 exige o SDK de iOS 26 ou posterior na
+compilacao; o workflow seleciona Xcode 26.3, em vez do Xcode 16.4 padrao do runner.
 
 O workflow `.github/workflows/ios-free.yml` foi preparado para runners padrao
 gratuitos em repositorio publico. Primeiro verifica a simulacao em Linux,

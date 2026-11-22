@@ -32,6 +32,8 @@ if [[ "$(uname -s)" != "Darwin" ]]; then
     exit 0
 fi
 command -v xcodebuild >/dev/null
+xcodebuild -version
+xcrun --sdk iphoneos --show-sdk-version
 run_logged "$build_dir/xcode.log" xcodebuild -project "$build_dir/FPVRacer.xcodeproj" -scheme FPVRacer \
     -configuration Release -sdk iphoneos -destination 'generic/platform=iOS' \
     -derivedDataPath "$build_dir/DerivedData" ARCHS=arm64 ONLY_ACTIVE_ARCH=NO \
