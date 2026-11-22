@@ -38,14 +38,17 @@ projeto; nao sao gravacoes de um carro real. Os graficos ainda sao simples.
 - O cockpit e o menu foram inspecionados em uma janela real. Aceleracao e
   reinicio foram acionados pelo teclado nessa janela.
 - O projeto **Xcode foi exportado em Linux** com o template oficial de iOS.
+- O app foi compilado em macOS arm64 com **Xcode 26.3 / SDK iOS 26.2**.
+  O IPA de 24,4 MB passou na verificacao de integridade do ZIP, Info.plist,
+  executavel Mach-O arm64 e presenca do pacote do jogo.
 - O instalador de CI para Linux foi executado e seu download oficial teve o
   SHA256 conferido. Os testes tambem passaram em uma copia limpa do codigo,
   sem cache do editor. Os resultados desta entrega estao em `verification.json`.
 
-Esses resultados sao de simulacao e desktop. Ainda faltam compilacao Xcode,
-assinatura pessoal, instalacao, desempenho, temperatura, inclinacao e controle
-fisico em um iPhone. Nao existe IPA gerado nesta entrega. A meta de 60 FPS e
-configuracao, nao uma medicao no aparelho.
+A simulacao foi verificada em desktop e o pacote iOS foi compilado no macOS.
+Ainda faltam assinatura pessoal, instalacao, desempenho, temperatura,
+inclinacao e controle fisico em um iPhone. O IPA gerado esta sem assinatura e
+nao instala diretamente. A meta de 60 FPS e configuracao, nao uma medicao no aparelho.
 
 ## Abrir e verificar
 
@@ -74,12 +77,14 @@ compilacao; o workflow seleciona Xcode 26.3, em vez do Xcode 16.4 padrao do runn
 O workflow `.github/workflows/ios-free.yml` foi preparado para runners padrao
 gratuitos em repositorio publico. Primeiro verifica a simulacao em Linux,
 depois compila em macOS e guarda o arquivo em um release de rascunho. O fluxo
-nao usa armazenamento de artifacts do Actions. A execucao remota e a compilacao
-macOS ainda estao pendentes. O workflow inicia ao enviar alteracoes do jogo
+nao usa armazenamento de artifacts do Actions. A verificacao Linux e a compilacao
+macOS passaram no [build 2](https://github.com/jojocaa123-beep/fpv-racer/actions/runs/45083726602),
+com fonte no commit `9bc64abf628ccc23c0d89af4b847027c5b8016a5`.
+O workflow inicia ao enviar alteracoes do jogo
 para `main`, ou manualmente na aba Actions. O log de uma etapa com falha e
 exibido no CI, preservando o codigo de erro do Godot ou do Xcode.
 
-A etapa macOS do script continua sem verificacao real neste ambiente Linux.
+O IPA esta no release de rascunho `ios-2-1`, acessivel ao dono do repositorio.
 Para teste pessoal, ferramentas gratuitas de sideload no Windows podem assinar
 com Apple ID gratuito, com renovacao em sete dias. A disponibilidade de um
 computador para essa instalacao ainda precisa ser confirmada. Nao prometer
