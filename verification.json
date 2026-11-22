@@ -1,0 +1,39 @@
+{
+  "version": "0.4.0",
+  "recorded_utc": "2026-11-22T21:16:08.420919+00:00",
+  "engine": "Godot 4.7.2.stable.official.ed1daf0bf",
+  "platform_tested": "Linux x86_64",
+  "checks": {
+    "physics_smoke": {
+      "checks": 31,
+      "failed": 0
+    },
+    "input_and_laps": {
+      "checks": 12,
+      "failed": 0
+    }
+  },
+  "driving": {
+    "laps": [
+      {
+        "seconds": 40.8414131639391,
+        "valid": true
+      },
+      {
+        "seconds": 40.4423099559081,
+        "valid": true
+      }
+    ],
+    "invalid_laps": 0,
+    "top_kmh": 73.927001953125,
+    "max_lateral_m": 1.41369295120239
+  },
+  "desktop_cockpit_and_keyboard_reviewed": true,
+  "fresh_source_ci_checks_passed": true,
+  "ios_xcode_project_exported": true,
+  "macos_compilation_executed": false,
+  "ipa_created": false,
+  "iphone_hardware_tested": false,
+  "remote_build_executed": false,
+  "money_spent": 0
+}

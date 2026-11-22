@@ -1,0 +1,60 @@
+name: Validar e compilar iOS sem assinatura
+
+# Build em cada envio do jogo para main, ou acionamento manual.
+on:
+  push:
+    branches: [main]
+    paths:
+      - '**.gd'
+      - '**.tscn'
+      - project.godot
+      - export_presets.cfg
+      - icon.svg
+      - scripts/**
+      - .github/workflows/ios-free.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    # Runners padrao sao gratuitos em repositorios publicos.
+    # O codigo so pode ser publicado depois da autorizacao do usuario.
+    if: github.event.repository.private == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Preparar Godot oficial
+        run: |
+          bash scripts/install-godot-ci.sh "$RUNNER_TEMP/fpv-godot"
+          printf 'GODOT_BIN=%s\n' "$(cat "$RUNNER_TEMP/fpv-godot/godot-path.txt")" >> "$GITHUB_ENV"
+      - name: Verificar fisica, controles e duas voltas
+        run: bash scripts/check.sh
+
+  ios:
+    needs: verify
+    if: github.event.repository.private == false
+    runs-on: macos-15
+    timeout-minutes: 30
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Preparar Godot e template iOS oficiais
+        run: |
+          bash scripts/install-godot-ci.sh "$RUNNER_TEMP/fpv-godot"
+          printf 'GODOT_BIN=%s\n' "$(cat "$RUNNER_TEMP/fpv-godot/godot-path.txt")" >> "$GITHUB_ENV"
+      - name: Gerar IPA sem assinatura
+        env:
+          FPV_IOS_OUTPUT_DIR: ${{ runner.temp }}/fpv-ios
+        run: bash scripts/build-ios-unsigned.sh
+      - name: Guardar resultado em release de rascunho
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "ios-$GITHUB_RUN_NUMBER-$GITHUB_RUN_ATTEMPT" \
+            "$RUNNER_TEMP/fpv-ios/FPVRacer-unsigned.ipa" \
+            --target "$GITHUB_SHA" --draft --title "FPV Racer 0.4 - IPA sem assinatura" \
+            --notes "Build de desenvolvimento. Requer assinatura pessoal antes de instalar. Validacao em iPhone ainda pendente."
