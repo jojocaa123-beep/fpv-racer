@@ -17,6 +17,8 @@ var steering_mode: int = SteeringMode.MOTION if OS.has_feature("mobile") else St
 var sensitivity: float = 2.5
 var fov: float = 65.0
 var volume: float = 0.6
+var camera_motion: bool = true
+var graphics_quality: int = 1
 var simulated: bool = false
 var paused: bool = false
 var pointers: Dictionary = {}
@@ -58,6 +60,8 @@ func _ready() -> void:
 		fov = clampf(float(prefs.get_value("driving", "fov", 65.0)), 55, 75)
 		sensitivity = clampf(float(prefs.get_value("driving", "sensitivity", 2.5)), 1.5, 3.5)
 		volume = clampf(float(prefs.get_value("driving", "volume", 0.6)), 0, 1)
+		camera_motion = bool(prefs.get_value("driving", "camera_motion", true))
+		graphics_quality = clampi(int(prefs.get_value("driving", "graphics_quality", 1)), 0, 2)
 	motion.calibrate()
 
 func _metrics() -> void:
@@ -131,7 +135,7 @@ func _input(event: InputEvent) -> void:
 func _begin(id: int, p: Vector2) -> void:
 	_end(id)
 	if paused:
-		for i in 10:
+		for i in 12:
 			if _menu_rect(i).has_point(p):
 				_option(i)
 				return
@@ -252,6 +256,12 @@ func _option(index: int) -> void:
 		6: fov = 55.0 if fov >= 75 else fov+5
 		7: sensitivity = 1.5 if sensitivity >= 3.5 else sensitivity+0.5
 		8: volume = 0.0 if volume >= 0.99 else minf(1, volume+0.2)
+		10:
+			camera_motion = not camera_motion
+			if not camera_motion: car.cockpit.reset_view()
+		11:
+			graphics_quality = (graphics_quality+1)%3
+			world.apply_graphics_quality()
 		9:
 			world.restart()
 			motion.calibrate()
@@ -261,7 +271,7 @@ func _option(index: int) -> void:
 
 func _save_preferences() -> void:
 	var prefs := ConfigFile.new()
-	for key in ["steer_assist", "tc", "steering_mode", "fov", "sensitivity", "volume"]:
+	for key in ["steer_assist", "tc", "steering_mode", "fov", "sensitivity", "volume", "camera_motion", "graphics_quality"]:
 		prefs.set_value("driving", key, get(key))
 	prefs.set_value("driving", "abs", abs_enabled)
 	prefs.save("user://preferences.cfg")
@@ -274,7 +284,7 @@ func _arrow_rect(right: bool) -> Rect2: return Rect2(172 if right else 24, 572, 
 func _slide_rect() -> Rect2: return Rect2(24, 572, minf(380, width*0.34), 124)
 func _mode_rect() -> Rect2: return Rect2(24, 514, 180, 42)
 func _calibrate_rect() -> Rect2: return Rect2(216, 514, 134, 42)
-func _menu_rect(i: int) -> Rect2: return Rect2(width*0.5-230, 118+i*51, 460, 44)
+func _menu_rect(i: int) -> Rect2: return Rect2(width*0.5-354+(i%2)*362, 180+floori(i/2.0)*66, 346, 54)
 func _mode_name() -> String: return ["GIROSCÓPIO", "SETAS", "DESLIZAR"][steering_mode]
 
 func _draw() -> void:
@@ -283,10 +293,10 @@ func _draw() -> void:
 	draw_set_transform(origin, 0, Vector2.ONE*ui_scale)
 	if paused:
 		draw_rect(Rect2(0, 0, width, 720), Color(0.015, 0.025, 0.04, 0.95))
-		_text(Vector2(width*0.5-230, 82), "TREINO PAUSADO", 28)
-		var labels: Array[String] = ["RETOMAR", "DIREÇÃO: "+_mode_name(), "CALIBRAR INCLINAÇÃO", "AJUDA DE DIREÇÃO: "+_on(steer_assist), "ABS: "+_on(abs_enabled), "CONTROLE DE TRAÇÃO: "+_on(tc), "CAMPO DE VISÃO: %d" % fov, "SENSIBILIDADE: %.1f" % sensitivity, "VOLUME: %d%%" % (volume*100), "REINICIAR TREINO"]
-		for i in 10:
-			_button(_menu_rect(i), labels[i])
+		_text(Vector2(width*0.5-230, 82), "PAUSA / AJUSTES", 28)
+		var labels: Array[String] = ["RETOMAR", "DIREÇÃO: "+_mode_name(), "CALIBRAR INCLINAÇÃO", "AJUDA DE DIREÇÃO: "+_on(steer_assist), "ABS: "+_on(abs_enabled), "CONTROLE DE TRAÇÃO: "+_on(tc), "CAMPO DE VISÃO: %d" % fov, "SENSIBILIDADE: %.1f" % sensitivity, "VOLUME: %d%%" % (volume*100), "REINICIAR TREINO", "CÂMERA: "+("DINÂMICA" if camera_motion else "FIXA"), "GRÁFICOS: "+["ECONÔMICO", "EQUILIBRADO", "ALTO"][graphics_quality]]
+		for i in 12:
+			_button(_menu_rect(i), labels[i], false, 17)
 		_text(Vector2(width*0.5-230, 658), "Calibre segurando o celular na posição de pilotagem.", 15)
 		_text(Vector2(width*0.5-230, 683), "As setas também funcionam no modo giroscópio.", 15, GREEN)
 		return
@@ -320,12 +330,38 @@ func _draw() -> void:
 	draw_rect(Rect2(center_x-72, 90, 144, 4), Color(0.3, 0.33, 0.36))
 	draw_rect(Rect2(center_x-72, 90, 144*clampf((car.gearbox.rpm-900)/6000.0, 0, 1), 4), Color.RED if car.gearbox.rpm > 6200 else GREEN)
 	_text(Vector2(center_x-62, 110), "TC %s   ABS %s" % [("*" if car.tc_active else _on(tc)), ("*" if car.abs_active else _on(abs_enabled))], 12)
+	_feedback_hud(center_x)
 	_pedal(_gas_rect(), throttle, GREEN, "ACELERAR")
 	_pedal(_brake_rect(), brake, Color(0.85, 0.25, 0.2), "FREIO")
 	_button(_reverse_rect(), "R > D" if reverse else "D > R", false, 16)
 	_button(_handbrake_rect(), "FREIO DE MÃO", handbrake, 13)
 	if not OS.has_feature("mobile"):
 		_text(Vector2(center_x-178, 715), "WASD / setas  ·  Espaço: freio de mão  ·  P: pausa", 12)
+
+func _feedback_hud(center_x: float) -> void:
+	draw_style_box(skin, Rect2(center_x-310, 18, 204, 98))
+	var at := Vector2(center_x-264, 61)
+	var line := Color(0.7, 0.8, 0.9, 0.32)
+	draw_arc(at, 28, 0, TAU, 32, line, 1.0, true)
+	draw_arc(at, 14, 0, TAU, 24, line, 1.0, true)
+	draw_line(at-Vector2(30, 0), at+Vector2(30, 0), line)
+	draw_line(at-Vector2(0, 30), at+Vector2(0, 30), line)
+	var force := Vector2(car.feedback.local_g.x, car.feedback.local_g.z)
+	draw_circle(at+force.limit_length(1.5)*(28.0/1.5), 4, GREEN, true, -1, true)
+	_text(Vector2(at.x-22, 108), "%.2f G" % force.length(), 13)
+	_text(Vector2(center_x-214, 39), "PNEUS", 12)
+	var slipping: bool = false
+	for i in 4:
+		var slip: Vector2 = car.wheel_slips[i]
+		var stress: float = clampf(maxf(absf(slip.x)/0.4, absf(slip.y)/0.22), 0, 1)
+		var tint: Color = GREEN.lerp(Color(1, 0.72, 0.18), stress*2.0) if stress < 0.5 else Color(1, 0.72, 0.18).lerp(Color(1, 0.3, 0.18), (stress-0.5)*2.0)
+		if not car.grounded[i]: tint = Color(0.35, 0.4, 0.45)
+		var tire := Rect2(center_x-209+(i%2)*34, 46+floori(i/2.0)*23, 18, 18)
+		draw_rect(tire, Color(tint, 0.25))
+		draw_rect(tire, tint, false, 1.5)
+		draw_rect(Rect2(tire.position+Vector2(3, tire.size.y*(1-stress)), Vector2(12, tire.size.y*stress)), tint)
+		slipping = slipping or (car.grounded[i] and stress > 0.7)
+	_text(Vector2(center_x-213, 108), "DESLIZA" if slipping and car.linear_velocity.length() > 3 else "CONTATO", 11, Color(1, 0.65, 0.25) if slipping else Color.WHITE)
 
 func _arrow(right: bool) -> void:
 	var area := _arrow_rect(right)

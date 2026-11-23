@@ -5,7 +5,10 @@ const Vehicle = preload("res://physics/car.gd")
 const Controls = preload("res://ui/controls.gd")
 const LapModel = preload("res://physics/laps.gd")
 const Sound = preload("res://sound.gd")
+const TireMarks = preload("res://visuals/tire_marks.gd")
 const CircuitVisuals = preload("res://visuals/circuit.gd")
+var tire_marks: MultiMeshInstance3D
+var sun: DirectionalLight3D
 var car
 var controls
 var laps = LapModel.new()
@@ -42,7 +45,7 @@ func _ready() -> void:
 	settings.fog_density = 0.0015
 	env.environment = settings
 	add_child(env)
-	var sun := DirectionalLight3D.new()
+	sun = DirectionalLight3D.new()
 	sun.rotation_degrees = Vector3(-48, -32, 0)
 	sun.light_energy = 1.1
 	sun.light_color = Color(1, 0.95, 0.85)
@@ -68,11 +71,24 @@ func _ready() -> void:
 	var forward: Vector3 = Track.tangent(samples, 0)
 	car.transform = Transform3D(Basis.looking_at(forward, Vector3.UP), samples[0]-forward*10+Vector3.UP*0.22)
 	add_child(car)
+	tire_marks = TireMarks.new()
+	tire_marks.car = car
+	add_child(tire_marks)
 	controls.car = car
 	var audio = Sound.new()
 	audio.car = car
 	audio.controls = controls
 	add_child(audio)
+	apply_graphics_quality()
+
+func apply_graphics_quality() -> void:
+	var quality: int = clampi(controls.graphics_quality, 0, 2)
+	var viewport := get_viewport()
+	viewport.scaling_3d_mode = Viewport.SCALING_3D_MODE_BILINEAR
+	viewport.scaling_3d_scale = [0.75, 0.85, 1.0][quality]
+	viewport.msaa_3d = [Viewport.MSAA_DISABLED, Viewport.MSAA_2X, Viewport.MSAA_4X][quality]
+	sun.shadow_enabled = quality > 0
+	sun.directional_shadow_max_distance = 70.0 if quality == 1 else 110.0
 
 func _physics_process(dt: float) -> void:
 	if car == null:
@@ -91,6 +107,7 @@ func _physics_process(dt: float) -> void:
 
 func restart() -> void:
 	car.reset_car()
+	tire_marks.break_trails()
 	laps.reset_attempt()
 	offroad_time = 0.0
 

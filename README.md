@@ -1,4 +1,4 @@
-# FPV Racer 0.6 — cockpit e circuito detalhados
+# FPV Racer 0.7 — sensacao de pilotagem e ajustes graficos
 
 Simulador de carro para celular, em primeira pessoa no cockpit. Referencia de
 conducao: Live for Speed. Prioridades: fisica, resposta dos controles e baixo
@@ -37,6 +37,18 @@ guard-rails com colisao, placas de 100/50 metros antes das curvas e portico
 de largada. Arvores e colinas formam o entorno, com ceu procedural, neblina
 suave e sombras do sol. Guard-rails, arvores e zebras usam lotes MultiMesh.
 Os elementos e materiais sao gerados pelo projeto, sem assets pagos.
+A camera acompanha suavemente a aceleracao, frenagem e curvas, com deslocamento
+limitado dentro da cabine. O menu permite trocar para camera fixa. O medidor G
+usa a aceleracao do chassi e o indicador dos quatro pneus mostra contato e
+deslizamento; suas cores nao representam temperatura. Derrapagens no asfalto
+deixam marcas, em um lote limitado a 512 segmentos.
+
+O menu foi reorganizado em duas colunas. Tres niveis graficos ficam salvos:
+economico (escala 3D de 75%, sem sombras ou MSAA), equilibrado (85%, sombras
+ate 70 m e MSAA 2x) e alto (100%, sombras ate 110 m e MSAA 4x). O HUD continua
+na resolucao da interface. O modo inicial e equilibrado; esses ajustes ainda
+nao foram medidos em um iPhone real.
+
 Motor e pneus usam sons sintetizados no projeto; nao sao gravacoes de um carro real. Os graficos ainda sao simples.
 
 ## Verificacao realizada
@@ -47,6 +59,8 @@ Motor e pneus usam sons sintetizados no projeto; nao sao gravacoes de um carro r
   calibracao, tremor, deriva, perda do sensor, celular em pe ou deitado e
   taxas de 30, 60 e 120 Hz.
   O sensor fisico do iPhone ainda precisa de verificacao no aparelho.
+- 14 checks de aceleracao medida, camera a 30/60/120 Hz, limites em impactos,
+  frenagem real, marcas de pneu, toques nas opcoes graficas e preferencias passaram.
 - Um piloto automatico de teste, que atua somente nos pedais e na direcao,
   completou duas voltas validas: aproximadamente **40,84 s** e **40,44 s**.
   Velocidade maxima observada: **73,9 km/h**. Desvio lateral maximo em relacao
@@ -58,16 +72,14 @@ Motor e pneus usam sons sintetizados no projeto; nao sao gravacoes de um carro r
   reinicio foram acionados pelo teclado nessa janela.
 - O novo cockpit e o circuito foram renderizados em 1280 x 720 e inspecionados,
   parado e em movimento a cerca de 70 km/h, com ponteiros, marcha e luzes ativos.
-- O iOS 0.6 foi compilado em macOS com Xcode 26.3 / SDK iOS 26.2. O IPA
-  passou na verificacao do ZIP, Info.plist e executavel Mach-O arm64. Os modulos
-  de direcao por movimento, cockpit e circuito estao presentes no pacote.
-- As 68 verificacoes, duas voltas e compilacao iOS passaram no
-  [build 6](https://github.com/jojocaa123-beep/fpv-racer/actions/runs/45237014917).
+- A compilacao iOS 0.7 esta pendente. A versao 0.6 anterior ja passou na
+  compilacao nativa e verificacao do pacote; os dados desta versao serao
+  registrados depois da compilacao.
 - O instalador de CI para Linux foi executado e seu download oficial teve o
   SHA256 conferido. Os testes tambem passaram em uma copia limpa do codigo,
   sem cache do editor. Os resultados desta entrega estao em `verification.json`.
 
-A simulacao e os controles da versao 0.6 foram verificados em desktop.
+A simulacao e os controles da versao 0.7 foram verificados em desktop.
 Ainda faltam assinatura pessoal, instalacao, desempenho, temperatura,
 inclinacao e controle fisico em um iPhone. O IPA de desenvolvimento requer assinatura pessoal para instalar.
 A meta de 60 FPS e configuracao, nao uma medicao no aparelho.
@@ -110,7 +122,7 @@ para `main`, ou manualmente na aba Actions. O log de uma etapa com falha e
 exibido no CI, preservando o codigo de erro do Godot ou do Xcode.
 
 Cada IPA gerado fica em um release de rascunho, acessivel ao dono do repositorio.
-A versao 0.6 desta entrega esta no release `ios-6-1`.
+O release da versao 0.7 sera registrado depois da compilacao.
 Para teste pessoal, ferramentas gratuitas de sideload no Windows podem assinar
 com Apple ID gratuito, com renovacao em sete dias. O dispositivo informado para a
 validacao e um iPhone 14, com acesso a PC Windows 10/11. Nao prometer

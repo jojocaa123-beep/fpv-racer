@@ -2,6 +2,7 @@ extends RigidBody3D
 
 const Driving = preload("res://physics/driving_math.gd")
 const Gearbox = preload("res://physics/powertrain.gd")
+const Feedback = preload("res://physics/feedback.gd")
 const Cockpit = preload("res://visuals/cockpit.gd")
 const RADIUS: float = 0.32
 const REST: float = 0.38
@@ -9,6 +10,9 @@ const INERTIA: float = 1.1
 const MOUNTS := [Vector3(-0.76, 0.60, -1.2), Vector3(0.76, 0.60, -1.2), Vector3(-0.76, 0.60, 1.2), Vector3(0.76, 0.60, 1.2)]
 var controls
 var gearbox = Gearbox.new()
+var feedback = Feedback.new()
+var wheel_slips: Array[Vector2] = [Vector2.ZERO, Vector2.ZERO, Vector2.ZERO, Vector2.ZERO]
+var cockpit: Node3D
 var grounded: Array[bool] = [false, false, false, false]
 var omega: Array[float] = [0.0, 0.0, 0.0, 0.0]
 var road_speed: Array[float] = [0.0, 0.0, 0.0, 0.0]
@@ -44,7 +48,7 @@ func _ready() -> void:
 	spawn_pose = global_transform
 	_shape(Vector3(1.7, 0.45, 3.8), Vector3(0, 0.63, 0))
 	_shape(Vector3(1.6, 0.8, 1.8), Vector3(0, 1.24, 0.35))
-	var cockpit = Cockpit.new()
+	cockpit = Cockpit.new()
 	cockpit.car = self
 	add_child(cockpit)
 	steering_wheel = cockpit.steering_wheel
@@ -158,12 +162,14 @@ func _physics_process(dt: float) -> void:
 			omega[i] += (motor - force.x*RADIUS - omega[i]*0.06) / INERTIA * h
 			omega[i] = move_toward(omega[i], 0.0, (brake + (8.0 if grounded[i] else 0.0)) / INERTIA * h)
 			average += force / substeps
+		wheel_slips[i] = Vector2((omega[i]*RADIUS-road_speed[i])/maxf(2.0, absf(road_speed[i])), slip_angle) if grounded[i] else Vector2.ZERO
 		if grounded[i]:
 			apply_force(forward*average.x + right*average.y, points[i] - global_position)
 			max_slip = maxf(max_slip, maxf(absf(slip_angle), absf((omega[i]*RADIUS-road_speed[i])/maxf(2.0, absf(road_speed[i])))))
 		wheel_angles[i] += omega[i] * dt
 		wheels[i].position = MOUNTS[i] - Vector3.UP * (REST-compression[i])
 		wheels[i].rotation = Vector3(wheel_angles[i], -angle, 0)
+	feedback.step(dt, linear_velocity, global_basis)
 	apply_central_force(-linear_velocity * linear_velocity.length() * 0.42)
 	steering_wheel.rotation.z = -controls.steering * deg_to_rad(160)
 	camera.fov = controls.fov
@@ -175,8 +181,11 @@ func reset_car() -> void:
 	constant_force = Vector3.ZERO
 	constant_torque = Vector3.ZERO
 	gearbox.reset()
+	feedback.reset()
+	cockpit.reset_view()
 	for i in 4:
 		omega[i] = 0.0
+		wheel_slips[i] = Vector2.ZERO
 		tc_scales[i] = 1.0
 		abs_scales[i] = 1.0
 	controls.clear()

@@ -1,5 +1,9 @@
 extends Node3D
 
+const HeadMotion = preload("res://visuals/head_motion.gd")
+const EYE := Vector3(-0.34, 1.33, 0.28)
+const VIEW_ANGLES := Vector3(deg_to_rad(-3), 0, 0)
+var head_motion = HeadMotion.new()
 var car
 var steering_wheel: Node3D
 var camera: Camera3D
@@ -76,8 +80,8 @@ func _ready() -> void:
 	label(steering_wheel, "FPV", Vector3(0, 0, 0.045), 32, 0.0010, Color(0.8, 0.84, 0.86))
 	box(steering_wheel, Vector3(0.012, 0.022, 0.018), Vector3(0, 0.166, 0.012), material(Color(0.9, 0.67, 0.12)))
 	camera = Camera3D.new()
-	camera.position = Vector3(-0.34, 1.33, 0.28)
-	camera.rotation.x = deg_to_rad(-3)
+	camera.position = EYE
+	camera.rotation = VIEW_ANGLES
 	camera.near = 0.035
 	camera.far = 650
 	camera.fov = 65
@@ -87,12 +91,20 @@ func _ready() -> void:
 func _process(dt: float) -> void:
 	if car == null:
 		return
+	head_motion.step(dt, car.feedback.local_g, car.angular_velocity.y, car.controls.camera_motion)
+	camera.position = EYE+head_motion.offset
+	camera.rotation = VIEW_ANGLES+head_motion.angles
 	var speed: float = car.linear_velocity.length()*3.6
 	speed_needle.rotation.z = lerp_angle(speed_needle.rotation.z, deg_to_rad(130.0-260.0*clampf(speed/240.0, 0, 1)), 1.0-exp(-16.0*dt))
 	rpm_needle.rotation.z = lerp_angle(rpm_needle.rotation.z, deg_to_rad(130.0-260.0*clampf(car.gearbox.rpm/8000.0, 0, 1)), 1.0-exp(-20.0*dt))
 	gear_label.text = "R" if car.controls.reverse else str(car.gearbox.gear)
 	for i in shift_lights.size():
 		shift_lights[i].material_override = led_on if car.gearbox.rpm > 4300+i*300 else led_off
+
+func reset_view() -> void:
+	head_motion.reset()
+	camera.position = EYE
+	camera.rotation = VIEW_ANGLES
 
 func dial(at: Vector3, maximum: int, caption: String, red_zone: bool) -> Node3D:
 	var group := Node3D.new()
