@@ -2,6 +2,7 @@ extends RigidBody3D
 
 const Driving = preload("res://physics/driving_math.gd")
 const Gearbox = preload("res://physics/powertrain.gd")
+const Cockpit = preload("res://visuals/cockpit.gd")
 const RADIUS: float = 0.32
 const REST: float = 0.38
 const INERTIA: float = 1.1
@@ -43,15 +44,12 @@ func _ready() -> void:
 	spawn_pose = global_transform
 	_shape(Vector3(1.7, 0.45, 3.8), Vector3(0, 0.63, 0))
 	_shape(Vector3(1.6, 0.8, 1.8), Vector3(0, 1.24, 0.35))
-	var paint := _material(Color(0.16, 0.29, 0.34))
+	var cockpit = Cockpit.new()
+	cockpit.car = self
+	add_child(cockpit)
+	steering_wheel = cockpit.steering_wheel
+	camera = cockpit.camera
 	var dark := _material(Color(0.025, 0.035, 0.045))
-	_box("Chassis", Vector3(1.7, 0.45, 3.8), Vector3(0, 0.63, 0), paint)
-	_box("Hood", Vector3(1.65, 0.08, 1.45), Vector3(0, 0.88, -1.15), paint)
-	_box("Dashboard", Vector3(1.58, 0.18, 0.45), Vector3(0, 0.97, -0.55), dark)
-	_box("Roof", Vector3(1.65, 0.07, 1.9), Vector3(0, 1.67, 0.35), paint)
-	for side in [-1, 1]:
-		_box("Door", Vector3(0.08, 0.30, 1.9), Vector3(side*0.8, 0.87, 0.35), paint)
-		_box("A pillar", Vector3(0.05, 0.65, 0.05), Vector3(side*0.77, 1.32, -0.58), dark)
 	for i in 4:
 		points.append(Vector3.ZERO)
 		normals.append(Vector3.UP)
@@ -72,33 +70,6 @@ func _ready() -> void:
 		mesh.rotation.z = PI / 2
 		pivot.add_child(mesh)
 		wheels.append(pivot)
-	steering_wheel = Node3D.new()
-	add_child(steering_wheel)
-	steering_wheel.position = Vector3(-0.34, 1.02, -0.25)
-	var rim := MeshInstance3D.new()
-	var torus := TorusMesh.new()
-	torus.inner_radius = 0.15
-	torus.outer_radius = 0.18
-	torus.rings = 24
-	torus.ring_segments = 8
-	rim.mesh = torus
-	rim.material_override = dark
-	rim.rotation.x = PI / 2
-	steering_wheel.add_child(rim)
-	var spoke := MeshInstance3D.new()
-	var spoke_mesh := BoxMesh.new()
-	spoke_mesh.size = Vector3(0.33, 0.025, 0.025)
-	spoke.mesh = spoke_mesh
-	spoke.material_override = _material(Color(0.6, 0.64, 0.65))
-	steering_wheel.add_child(spoke)
-	camera = Camera3D.new()
-	camera.position = Vector3(-0.34, 1.31, 0.28)
-	camera.rotation.x = deg_to_rad(-3)
-	camera.near = 0.04
-	camera.far = 350
-	camera.fov = 65
-	add_child(camera)
-	camera.current = true
 
 func _physics_process(dt: float) -> void:
 	if controls == null:

@@ -1,4 +1,4 @@
-# FPV Racer 0.5 — direcao por movimento e setas
+# FPV Racer 0.6 — cockpit e circuito detalhados
 
 Simulador de carro para celular, em primeira pessoa no cockpit. Referencia de
 conducao: Live for Speed. Prioridades: fisica, resposta dos controles e baixo
@@ -26,8 +26,17 @@ GIROSCOPIO / SETAS / DESLIZAR fica visivel durante a pilotagem. Setas esquerda e
 direita tambem funcionam como controle manual no modo de movimento. Soltar ou
 cancelar um toque libera a direcao. Setas opostas se anulam.
 
-Ha cockpit, volante animado, pedais analogicos, freio de mao, pausa e FOV ajustavel.
-O HUD ficou menor, com botoes de direcao visiveis e calibracao fora do menu.
+O cockpit tem velocimetro e conta-giros com ponteiros ligados a simulacao,
+indicador de marcha, luzes de troca e volante de tres raios animado. Console,
+saidas de ar e estrutura da cabine foram detalhados. O HUD de velocidade fica
+no topo para liberar a vista dos instrumentos. Ha pedais analogicos, freio de
+mao, pausa e FOV ajustavel, com setas e calibracao visiveis.
+
+A pista ganhou texturas procedurais de asfalto e grama, zebras continuas,
+guard-rails com colisao, placas de 100/50 metros antes das curvas e portico
+de largada. Arvores e colinas formam o entorno, com ceu procedural, neblina
+suave e sombras do sol. Guard-rails, arvores e zebras usam lotes MultiMesh.
+Os elementos e materiais sao gerados pelo projeto, sem assets pagos.
 Motor e pneus usam sons sintetizados no projeto; nao sao gravacoes de um carro real. Os graficos ainda sao simples.
 
 ## Verificacao realizada
@@ -47,15 +56,14 @@ Motor e pneus usam sons sintetizados no projeto; nao sao gravacoes de um carro r
   tambem passaram. A oscilacao inicial em repouso foi corrigida.
 - O cockpit e o menu foram inspecionados em uma janela real. Aceleracao e
   reinicio foram acionados pelo teclado nessa janela.
-- O projeto iOS 0.5 foi exportado e compilado em macOS com **Xcode 26.3 / SDK iOS 26.2**.
-  O IPA passou na verificacao do ZIP, Info.plist, executavel Mach-O arm64 e
-  presenca do modulo de direcao por movimento no pacote do jogo.
-- As 68 verificacoes e duas voltas passaram no [build 5](https://github.com/jojocaa123-beep/fpv-racer/actions/runs/45230208823).
+- O novo cockpit e o circuito foram renderizados em 1280 x 720 e inspecionados.
+- A compilacao iOS 0.6 esta pendente; a versao 0.5 anterior ja foi compilada
+  em macOS com Xcode 26.3 / SDK iOS 26.2.
 - O instalador de CI para Linux foi executado e seu download oficial teve o
   SHA256 conferido. Os testes tambem passaram em uma copia limpa do codigo,
   sem cache do editor. Os resultados desta entrega estao em `verification.json`.
 
-A simulacao e os controles da versao 0.5 foram verificados em desktop.
+A simulacao e os controles da versao 0.6 foram verificados em desktop.
 Ainda faltam assinatura pessoal, instalacao, desempenho, temperatura,
 inclinacao e controle fisico em um iPhone. O IPA de desenvolvimento requer assinatura pessoal para instalar.
 A meta de 60 FPS e configuracao, nao uma medicao no aparelho.
@@ -98,7 +106,7 @@ para `main`, ou manualmente na aba Actions. O log de uma etapa com falha e
 exibido no CI, preservando o codigo de erro do Godot ou do Xcode.
 
 Cada IPA gerado fica em um release de rascunho, acessivel ao dono do repositorio.
-A versao 0.5 desta entrega esta no release `ios-5-1`.
+O resultado iOS da versao 0.6 sera registrado depois da compilacao.
 Para teste pessoal, ferramentas gratuitas de sideload no Windows podem assinar
 com Apple ID gratuito, com renovacao em sete dias. O dispositivo informado para a
 validacao e um iPhone 14, com acesso a PC Windows 10/11. Nao prometer

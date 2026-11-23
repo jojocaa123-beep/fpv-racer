@@ -1,6 +1,6 @@
 {
-  "version": "0.5.0",
-  "recorded_utc": "2026-11-23T17:46:03.731741+00:00",
+  "version": "0.6.0",
+  "recorded_utc": "2026-11-23T18:17:56.216879+00:00",
   "engine": "Godot 4.7.2.stable.official.ed1daf0bf",
   "platform_tested": "Linux x86_64",
   "checks": {
@@ -33,45 +33,21 @@
     "max_lateral_m": 1.41369295120239
   },
   "desktop_cockpit_and_keyboard_reviewed": true,
-  "fresh_source_ci_checks_passed": true,
-  "ios_xcode_project_exported": true,
-  "macos_compilation_executed": true,
-  "ipa_created": true,
+  "fresh_source_ci_checks_passed": false,
+  "ios_xcode_project_exported": false,
+  "macos_compilation_executed": false,
+  "ipa_created": false,
   "iphone_hardware_tested": false,
-  "remote_build_executed": true,
+  "remote_build_executed": false,
   "money_spent": 0,
   "motion_sensor_streams_simulated": true,
   "iphone_motion_hardware_tested": false,
   "desktop_new_controls_reviewed": true,
   "motion_flat_and_upright_tested_with_simulated_data": true,
-  "ios_build": {
-    "xcode": "26.3",
-    "sdk": "26.2",
-    "runner": "macos-15-intel",
-    "source_commit": "10367a7464f8441eae0ff85befdce1b3b6ed0ca6",
-    "ci_run": "https://github.com/jojocaa123-beep/fpv-racer/actions/runs/45230208823",
-    "artifact": {
-      "file": "FPVRacer-v0.5-unsigned.ipa",
-      "bytes": 24416499,
-      "sha256": "63323e39ea6e5efc499c7caaac33942bacca9cad5fc452c8aa09aa0bbb506ad1",
-      "zip_crc_passed": true,
-      "bundle_identifier": "com.prototype.fpvracer",
-      "version": "0.5.0",
-      "build": "5",
-      "minimum_ios": "15.0",
-      "architecture": "arm64",
-      "platform": "iPhoneOS",
-      "game_pck_present": true,
-      "motion_steering_module_present": true,
-      "embedded_provisioning_present": false,
-      "signature_resources_present": false,
-      "iphone_hardware_tested": false,
-      "required_device_capabilities": [
-        "iphone-ipad-minimum-performance-a12",
-        "arm64"
-      ],
-      "source_commit": "10367a7464f8441eae0ff85befdce1b3b6ed0ca6",
-      "ci_run": "https://github.com/jojocaa123-beep/fpv-racer/actions/runs/45230208823"
-    }
-  }
+  "desktop_visuals_06_render_reviewed": true,
+  "desktop_render_size": [
+    1280,
+    720
+  ],
+  "mobile_render_performance_measured": false
 }

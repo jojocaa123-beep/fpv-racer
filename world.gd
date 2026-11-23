@@ -5,6 +5,7 @@ const Vehicle = preload("res://physics/car.gd")
 const Controls = preload("res://ui/controls.gd")
 const LapModel = preload("res://physics/laps.gd")
 const Sound = preload("res://sound.gd")
+const CircuitVisuals = preload("res://visuals/circuit.gd")
 var car
 var controls
 var laps = LapModel.new()
@@ -23,27 +24,42 @@ func _ready() -> void:
 		laps.best_time = best if is_finite(best) and best > 0 else 0.0
 	var env := WorldEnvironment.new()
 	var settings := Environment.new()
-	settings.background_mode = Environment.BG_COLOR
-	settings.background_color = Color(0.55, 0.69, 0.78)
+	settings.background_mode = Environment.BG_SKY
+	var sky := Sky.new()
+	var sky_material := ProceduralSkyMaterial.new()
+	sky_material.sky_top_color = Color(0.15, 0.34, 0.58)
+	sky_material.sky_horizon_color = Color(0.69, 0.79, 0.84)
+	sky_material.ground_horizon_color = Color(0.64, 0.72, 0.72)
+	sky_material.ground_bottom_color = Color(0.18, 0.23, 0.17)
+	sky.sky_material = sky_material
+	sky.radiance_size = Sky.RADIANCE_SIZE_64
+	settings.sky = sky
 	settings.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
 	settings.ambient_light_color = Color(0.75, 0.8, 0.9)
-	settings.ambient_light_energy = 0.65
+	settings.ambient_light_energy = 0.6
+	settings.fog_enabled = true
+	settings.fog_light_color = Color(0.65, 0.74, 0.78)
+	settings.fog_density = 0.0015
 	env.environment = settings
 	add_child(env)
 	var sun := DirectionalLight3D.new()
 	sun.rotation_degrees = Vector3(-48, -32, 0)
-	sun.light_energy = 1.15
+	sun.light_energy = 1.1
+	sun.light_color = Color(1, 0.95, 0.85)
+	sun.shadow_enabled = true
+	sun.directional_shadow_mode = DirectionalLight3D.SHADOW_ORTHOGONAL
+	sun.directional_shadow_max_distance = 110
 	add_child(sun)
-	var grass := _material(Color(0.24, 0.34, 0.20))
-	var road := _material(Color(0.14, 0.16, 0.18))
+	var grass := CircuitVisuals.surface(Color(0.25, 0.34, 0.18), true)
+	var road := CircuitVisuals.surface(Color(0.18, 0.19, 0.2), false)
 	road.cull_mode = BaseMaterial3D.CULL_DISABLED
 	var white := _material(Color(0.86, 0.87, 0.79))
 	var red := _material(Color(0.64, 0.16, 0.11))
-	_static_box("Grass", Vector3(400, 0.2, 400), Vector3(0, -0.1, 0), grass, 0.58)
+	_static_box("Grass", Vector3(1600, 0.2, 1600), Vector3(0, -0.1, 0), grass, 0.58)
 	_make_road(road, white, red)
-	for i in 18:
-		var a: float = i * TAU / 18.0
-		_static_box("Reference marker", Vector3(2, 6, 2), Vector3(sin(a)*155, 3, cos(a)*145), white if i%2 == 0 else red, 0.58)
+	var scenery := CircuitVisuals.new()
+	scenery.samples = samples
+	add_child(scenery)
 	controls = Controls.new()
 	controls.world = self
 	add_child(controls)
@@ -82,25 +98,32 @@ func _make_road(material: Material, white: Material, red: Material) -> void:
 	var vertices := PackedVector3Array()
 	var normals := PackedVector3Array()
 	var indices := PackedInt32Array()
+	var uvs := PackedVector2Array()
+	var path_distance: float = 0.0
 	var edges: Array[Transform3D] = []
 	var colors: Array[int] = []
 	for i in samples.size():
+		if i > 0: path_distance += samples[i].distance_to(samples[i-1])
 		var forward: Vector3 = Track.tangent(samples, i)
 		var right: Vector3 = forward.cross(Vector3.UP)
 		vertices.append(samples[i]-right*6+Vector3.UP*0.015)
 		vertices.append(samples[i]+right*6+Vector3.UP*0.015)
 		normals.append(Vector3.UP)
 		normals.append(Vector3.UP)
+		uvs.append(Vector2(0, path_distance/4.0))
+		uvs.append(Vector2(3, path_distance/4.0))
 		var j: int = ((i+1) % samples.size())*2
 		indices.append_array(PackedInt32Array([i*2, j, i*2+1, i*2+1, j, j+1]))
-		if i%2 == 0:
-			for side in [-1, 1]:
-				edges.append(Transform3D(Basis.looking_at(forward, Vector3.UP), samples[i]+right*5.85*side+Vector3.UP*0.025))
-				colors.append(0 if i%4 == 0 else 1)
+		var next: int = (i+1)%samples.size()
+		var segment: Vector3 = samples[next]-samples[i]
+		for side in [-1, 1]:
+			edges.append(Transform3D(Basis.looking_at(segment.normalized(), Vector3.UP)*Basis.from_scale(Vector3(1, 1, segment.length()+0.08)), (samples[i]+samples[next])*0.5+right*6.2*side+Vector3.UP*0.03))
+			colors.append(i%2)
 	var arrays: Array = []
 	arrays.resize(Mesh.ARRAY_MAX)
 	arrays[Mesh.ARRAY_VERTEX] = vertices
 	arrays[Mesh.ARRAY_NORMAL] = normals
+	arrays[Mesh.ARRAY_TEX_UV] = uvs
 	arrays[Mesh.ARRAY_INDEX] = indices
 	var mesh := ArrayMesh.new()
 	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
@@ -121,7 +144,7 @@ func _make_road(material: Material, white: Material, red: Material) -> void:
 		var multi := MultiMesh.new()
 		multi.transform_format = MultiMesh.TRANSFORM_3D
 		var block := BoxMesh.new()
-		block.size = Vector3(0.22, 0.015, 1.7)
+		block.size = Vector3(0.65, 0.025, 1)
 		multi.mesh = block
 		multi.instance_count = colors.count(group)
 		var index: int = 0
