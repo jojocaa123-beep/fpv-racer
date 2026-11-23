@@ -56,9 +56,13 @@ Motor e pneus usam sons sintetizados no projeto; nao sao gravacoes de um carro r
   tambem passaram. A oscilacao inicial em repouso foi corrigida.
 - O cockpit e o menu foram inspecionados em uma janela real. Aceleracao e
   reinicio foram acionados pelo teclado nessa janela.
-- O novo cockpit e o circuito foram renderizados em 1280 x 720 e inspecionados.
-- A compilacao iOS 0.6 esta pendente; a versao 0.5 anterior ja foi compilada
-  em macOS com Xcode 26.3 / SDK iOS 26.2.
+- O novo cockpit e o circuito foram renderizados em 1280 x 720 e inspecionados,
+  parado e em movimento a cerca de 70 km/h, com ponteiros, marcha e luzes ativos.
+- O iOS 0.6 foi compilado em macOS com Xcode 26.3 / SDK iOS 26.2. O IPA
+  passou na verificacao do ZIP, Info.plist e executavel Mach-O arm64. Os modulos
+  de direcao por movimento, cockpit e circuito estao presentes no pacote.
+- As 68 verificacoes, duas voltas e compilacao iOS passaram no
+  [build 6](https://github.com/jojocaa123-beep/fpv-racer/actions/runs/45237014917).
 - O instalador de CI para Linux foi executado e seu download oficial teve o
   SHA256 conferido. Os testes tambem passaram em uma copia limpa do codigo,
   sem cache do editor. Os resultados desta entrega estao em `verification.json`.
@@ -106,7 +110,7 @@ para `main`, ou manualmente na aba Actions. O log de uma etapa com falha e
 exibido no CI, preservando o codigo de erro do Godot ou do Xcode.
 
 Cada IPA gerado fica em um release de rascunho, acessivel ao dono do repositorio.
-O resultado iOS da versao 0.6 sera registrado depois da compilacao.
+A versao 0.6 desta entrega esta no release `ios-6-1`.
 Para teste pessoal, ferramentas gratuitas de sideload no Windows podem assinar
 com Apple ID gratuito, com renovacao em sete dias. O dispositivo informado para a
 validacao e um iPhone 14, com acesso a PC Windows 10/11. Nao prometer
