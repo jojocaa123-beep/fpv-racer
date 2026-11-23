@@ -1,6 +1,6 @@
 {
   "version": "0.7.0",
-  "recorded_utc": "2026-11-23T22:59:52.713255+00:00",
+  "recorded_utc": "2026-11-23T23:06:07.508433+00:00",
   "engine": "Godot 4.7.2.stable.official.ed1daf0bf",
   "platform_tested": "Linux x86_64",
   "checks": {
@@ -37,12 +37,12 @@
     "max_lateral_m": 1.41369295120239
   },
   "desktop_cockpit_and_keyboard_reviewed": true,
-  "fresh_source_ci_checks_passed": false,
-  "ios_xcode_project_exported": false,
-  "macos_compilation_executed": false,
-  "ipa_created": false,
+  "fresh_source_ci_checks_passed": true,
+  "ios_xcode_project_exported": true,
+  "macos_compilation_executed": true,
+  "ipa_created": true,
   "iphone_hardware_tested": false,
-  "remote_build_executed": false,
+  "remote_build_executed": true,
   "money_spent": 0,
   "motion_sensor_streams_simulated": true,
   "iphone_motion_hardware_tested": false,
@@ -63,5 +63,46 @@
     60,
     120
   ],
-  "tire_marks_tested_with_locked_wheels": true
+  "tire_marks_tested_with_locked_wheels": true,
+  "ios_build": {
+    "xcode": "26.3",
+    "sdk": "26.2",
+    "runner": "macos-15-intel",
+    "source_commit": "f30236d558754269a3385114d865c8a5cc4a9976",
+    "ci_run": "https://github.com/jojocaa123-beep/fpv-racer/actions/runs/45284966181",
+    "artifact": {
+      "file": "FPVRacer-v0.7-unsigned.ipa",
+      "bytes": 24437575,
+      "sha256": "fe6c5c34185318a417ca50f4bada9b6074c6211e06655aac2bf15e877331903e",
+      "zip_crc_passed": true,
+      "bundle_identifier": "com.prototype.fpvracer",
+      "version": "0.7.0",
+      "build": "7",
+      "minimum_ios": "15.0",
+      "sdk_name": "iphoneos26.2",
+      "sdk_version": "26.2",
+      "architecture": "arm64",
+      "platform": "iPhoneOS",
+      "game_pck_present": true,
+      "motion_steering_module_present": true,
+      "embedded_provisioning_present": false,
+      "signature_resources_present": false,
+      "iphone_hardware_tested": false,
+      "required_device_capabilities": [
+        "iphone-ipad-minimum-performance-a12",
+        "arm64"
+      ],
+      "cockpit_and_circuit_modules_present": true,
+      "feedback_head_motion_and_tire_marks_modules_present": true,
+      "source_commit": "f30236d558754269a3385114d865c8a5cc4a9976",
+      "ci_run": "https://github.com/jojocaa123-beep/fpv-racer/actions/runs/45284966181"
+    }
+  },
+  "desktop_preview_renderer": "GL Compatibility / Mesa llvmpipe",
+  "mobile_renderer_runtime_validated": false,
+  "mobile_renderer_attempt": {
+    "platform": "Linux",
+    "requested": "mobile/Vulkan",
+    "result": "Required VK_KHR_surface extension unavailable; engine fell back to OpenGL Compatibility"
+  }
 }

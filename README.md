@@ -72,9 +72,14 @@ Motor e pneus usam sons sintetizados no projeto; nao sao gravacoes de um carro r
   reinicio foram acionados pelo teclado nessa janela.
 - O novo cockpit e o circuito foram renderizados em 1280 x 720 e inspecionados,
   parado e em movimento a cerca de 70 km/h, com ponteiros, marcha e luzes ativos.
-- A compilacao iOS 0.7 esta pendente. A versao 0.6 anterior ja passou na
-  compilacao nativa e verificacao do pacote; os dados desta versao serao
-  registrados depois da compilacao.
+- O HUD de pneus/forca G e o menu foram inspecionados no renderizador GL
+  Compatibility. O renderizador mobile nao iniciou neste ambiente Linux por
+  falta de uma extensao Vulkan; a conferencia de Metal no iPhone esta pendente.
+- O iOS 0.7 foi compilado com Xcode 26.3 / SDK iOS 26.2. O IPA passou na
+  verificacao de ZIP, Info.plist, executavel arm64 e presenca dos modulos de
+  movimento, cockpit, circuito, feedback, camera e marcas de pneu no pacote.
+- As 82 verificacoes, duas voltas e compilacao iOS passaram no
+  [build 7](https://github.com/jojocaa123-beep/fpv-racer/actions/runs/45284966181).
 - O instalador de CI para Linux foi executado e seu download oficial teve o
   SHA256 conferido. Os testes tambem passaram em uma copia limpa do codigo,
   sem cache do editor. Os resultados desta entrega estao em `verification.json`.
@@ -122,7 +127,7 @@ para `main`, ou manualmente na aba Actions. O log de uma etapa com falha e
 exibido no CI, preservando o codigo de erro do Godot ou do Xcode.
 
 Cada IPA gerado fica em um release de rascunho, acessivel ao dono do repositorio.
-O release da versao 0.7 sera registrado depois da compilacao.
+A versao 0.7 desta entrega esta no release `ios-7-1`.
 Para teste pessoal, ferramentas gratuitas de sideload no Windows podem assinar
 com Apple ID gratuito, com renovacao em sete dias. O dispositivo informado para a
 validacao e um iPhone 14, com acesso a PC Windows 10/11. Nao prometer
