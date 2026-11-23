@@ -1,4 +1,4 @@
-# FPV Racer 0.4 — base executavel
+# FPV Racer 0.5 — direcao por movimento e setas
 
 Simulador de carro para celular, em primeira pessoa no cockpit. Referencia de
 conducao: Live for Speed. Prioridades: fisica, resposta dos controles e baixo
@@ -20,14 +20,23 @@ ABS, TC e ajuda de direcao sao opcionais. O circuito de treino tem cerca de
 636 m, largura de 12 m, grama com aderencia menor, oito checkpoints e tempos
 de volta com invalidacao por corte. Melhores tempos e ajustes sao locais.
 
-Ha cockpit, volante animado, controle por toque ou inclinacao, pedais analogicos,
-freio de mao, pausa e FOV ajustavel. Motor e pneus usam sons sintetizados no
+A direcao por movimento e o modo inicial no iPhone: giroscopio e gravidade
+combinados, calibracao do neutro, zona morta e sensibilidade ajustavel. O botao
+GIROSCOPIO / SETAS / DESLIZAR fica visivel durante a pilotagem. Setas esquerda e
+direita tambem funcionam como controle manual no modo de movimento. Soltar ou
+cancelar um toque libera a direcao. Setas opostas se anulam.
+
+Ha cockpit, volante animado, pedais analogicos, freio de mao, pausa e FOV ajustavel.
+O HUD ficou menor, com botoes de direcao visiveis e calibracao fora do menu. Motor e pneus usam sons sintetizados no
 projeto; nao sao gravacoes de um carro real. Os graficos ainda sao simples.
 
 ## Verificacao realizada
 
 - 31 checks de fisica e pneus passaram dentro do Godot.
-- 12 checks de eventos de toque, cancelamento, pausa e cronometragem passaram.
+- 22 checks de eventos de toque, setas, cancelamento, pausa e cronometragem passaram.
+- 12 checks do filtro de movimento passaram com leituras simuladas: sentido,
+  calibracao, tremor, deriva, perda do sensor e taxas de 30, 60 e 120 Hz.
+  O sensor fisico do iPhone ainda precisa de verificacao no aparelho.
 - Um piloto automatico de teste, que atua somente nos pedais e na direcao,
   completou duas voltas validas: aproximadamente **40,84 s** e **40,44 s**.
   Velocidade maxima observada: **73,9 km/h**. Desvio lateral maximo em relacao
@@ -38,17 +47,15 @@ projeto; nao sao gravacoes de um carro real. Os graficos ainda sao simples.
 - O cockpit e o menu foram inspecionados em uma janela real. Aceleracao e
   reinicio foram acionados pelo teclado nessa janela.
 - O projeto **Xcode foi exportado em Linux** com o template oficial de iOS.
-- O app foi compilado em macOS arm64 com **Xcode 26.3 / SDK iOS 26.2**.
-  O IPA de 24,4 MB passou na verificacao de integridade do ZIP, Info.plist,
-  executavel Mach-O arm64 e presenca do pacote do jogo.
+- A versao anterior, 0.4, foi compilada em macOS arm64 com Xcode 26.3 / SDK iOS 26.2.
+  O novo IPA 0.5 esta aguardando a compilacao remota.
 - O instalador de CI para Linux foi executado e seu download oficial teve o
   SHA256 conferido. Os testes tambem passaram em uma copia limpa do codigo,
   sem cache do editor. Os resultados desta entrega estao em `verification.json`.
 
-A simulacao foi verificada em desktop e o pacote iOS foi compilado no macOS.
+A simulacao e os controles da versao 0.5 foram verificados em desktop.
 Ainda faltam assinatura pessoal, instalacao, desempenho, temperatura,
-inclinacao e controle fisico em um iPhone. O IPA gerado esta sem assinatura e
-nao instala diretamente. A meta de 60 FPS e configuracao, nao uma medicao no aparelho.
+inclinacao e controle fisico em um iPhone. O IPA de desenvolvimento requer assinatura pessoal para instalar. A meta de 60 FPS e configuracao, nao uma medicao no aparelho.
 
 ## Abrir e verificar
 
@@ -56,7 +63,9 @@ Importe `project.godot` no Godot 4.7.2 e use F5. Nao exige assets pagos ou conta
 Teclado: WASD/setas, espaco para freio de mao, Q para D/R parado, R para reinicio
 e P/Esc para pausa. O menu permite ajustar as ajudas, FOV e sensibilidade.
 No celular, use dedos diferentes para direcao e pedais; mais alto no pedal
-significa maior pressao. A inclinacao e calibrada ao ativar o modo.
+significa maior pressao. No iPhone o modo de movimento calibra a primeira
+leitura valida. Segure o aparelho na posicao de pilotagem e toque CALIBRAR para
+redefinir o neutro. Toque no nome do modo para alternar para SETAS ou DESLIZAR.
 
 Os testes podem ser repetidos com Godot, Bash e ripgrep:
 
@@ -77,17 +86,16 @@ compilacao; o workflow seleciona Xcode 26.3, em vez do Xcode 16.4 padrao do runn
 O workflow `.github/workflows/ios-free.yml` foi preparado para runners padrao
 gratuitos em repositorio publico. Primeiro verifica a simulacao em Linux,
 depois compila em macOS e guarda o arquivo em um release de rascunho. O fluxo
-nao usa armazenamento de artifacts do Actions. A verificacao Linux e a compilacao
-macOS passaram no [build 2](https://github.com/jojocaa123-beep/fpv-racer/actions/runs/45083726602),
-com fonte no commit `9bc64abf628ccc23c0d89af4b847027c5b8016a5`.
+nao usa armazenamento de artifacts do Actions. O historico de verificacao e os
+resultados da versao atual estao em `verification.json`.
 O workflow inicia ao enviar alteracoes do jogo
 para `main`, ou manualmente na aba Actions. O log de uma etapa com falha e
 exibido no CI, preservando o codigo de erro do Godot ou do Xcode.
 
-O IPA esta no release de rascunho `ios-2-1`, acessivel ao dono do repositorio.
+Cada IPA gerado fica em um release de rascunho, acessivel ao dono do repositorio.
 Para teste pessoal, ferramentas gratuitas de sideload no Windows podem assinar
-com Apple ID gratuito, com renovacao em sete dias. A disponibilidade de um
-computador para essa instalacao ainda precisa ser confirmada. Nao prometer
+com Apple ID gratuito, com renovacao em sete dias. O dispositivo informado para a
+validacao e um iPhone 14, com acesso a PC Windows 10/11. Nao prometer
 publicacao na App Store ou instalacao permanente gratuita.
 
 O motor Godot usa a licenca MIT incluida em `GODOT-LICENSE.txt`. O codigo do

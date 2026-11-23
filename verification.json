@@ -1,6 +1,6 @@
 {
-  "version": "0.4.0",
-  "recorded_utc": "2026-11-22T23:35:38.422717+00:00",
+  "version": "0.5.0",
+  "recorded_utc": "2026-11-23T17:28:11.400475+00:00",
   "engine": "Godot 4.7.2.stable.official.ed1daf0bf",
   "platform_tested": "Linux x86_64",
   "checks": {
@@ -9,6 +9,10 @@
       "failed": 0
     },
     "input_and_laps": {
+      "checks": 22,
+      "failed": 0
+    },
+    "motion_steering": {
       "checks": 12,
       "failed": 0
     }
@@ -31,38 +35,12 @@
   "desktop_cockpit_and_keyboard_reviewed": true,
   "fresh_source_ci_checks_passed": true,
   "ios_xcode_project_exported": true,
-  "macos_compilation_executed": true,
-  "ipa_created": true,
+  "macos_compilation_executed": false,
+  "ipa_created": false,
   "iphone_hardware_tested": false,
-  "remote_build_executed": true,
+  "remote_build_executed": false,
   "money_spent": 0,
-  "ios_build": {
-    "xcode": "26.3",
-    "sdk": "26.2",
-    "runner": "macos-15-arm64",
-    "source_commit": "9bc64abf628ccc23c0d89af4b847027c5b8016a5",
-    "ci_run": "https://github.com/jojocaa123-beep/fpv-racer/actions/runs/45083726602",
-    "artifact": {
-      "file": "FPVRacer-unsigned.ipa",
-      "bytes": 24411625,
-      "sha256": "84655f9f7ae464a98d2bfa4783c2f6598c8ad79e605f1be99a769d8a531ca355",
-      "zip_crc_passed": true,
-      "bundle_identifier": "com.prototype.fpvracer",
-      "version": "0.4.0",
-      "build": "4",
-      "minimum_ios": "15.0",
-      "architecture": "arm64",
-      "platform": "iPhoneOS",
-      "game_pck_present": true,
-      "embedded_provisioning_present": false,
-      "signature_resources_present": false,
-      "iphone_hardware_tested": false,
-      "required_device_capabilities": [
-        "iphone-ipad-minimum-performance-a12",
-        "arm64"
-      ],
-      "source_commit": "9bc64abf628ccc23c0d89af4b847027c5b8016a5",
-      "ci_run": "https://github.com/jojocaa123-beep/fpv-racer/actions/runs/45083726602"
-    }
-  }
+  "motion_sensor_streams_simulated": true,
+  "iphone_motion_hardware_tested": false,
+  "desktop_new_controls_reviewed": false
 }

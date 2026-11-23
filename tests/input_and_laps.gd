@@ -39,7 +39,8 @@ func _run() -> void:
 		await physics_frame
 	await process_frame
 	var input = game.controls
-	var gas := Vector2(input.width*0.88, 550)
+	input._set_mode(input.SteeringMode.SLIDE, false)
+	var gas: Vector2 = input._gas_rect().get_center()
 	touch(0, Vector2(100, 600), true)
 	touch(1, gas, true)
 	drag(0, Vector2(260, 600))
@@ -47,7 +48,7 @@ func _run() -> void:
 		await physics_frame
 	check(input.steering > 0.5 and input.throttle > 0.5, "Dois dedos controlam direcao e acelerador simultaneamente")
 	check(input.brake == 0, "Acelerador nao aciona freio")
-	drag(1, Vector2(input.width*0.69, 580))
+	drag(1, input._brake_rect().get_center())
 	await process_frame
 	check(input.brake == 0 and int(input.pointers.get(1, -1)) == 1, "Arrastar pedal nao troca sua funcao")
 	touch(1, gas, false, true)
@@ -69,10 +70,48 @@ func _run() -> void:
 	await process_frame
 	check(input.paused, "Botao de pausa funciona por toque")
 	touch(9, Vector2(input.width-74, 40), false)
-	touch(10, Vector2(input.width*0.5, 151), true)
+	touch(10, input._menu_rect(0).get_center(), true)
 	await process_frame
 	check(not input.paused, "Menu retoma a simulacao por toque")
-	touch(10, Vector2(input.width*0.5, 151), false)
+	touch(10, input._menu_rect(0).get_center(), false)
+	input._set_mode(input.SteeringMode.ARROWS, false)
+	var left: Vector2 = input._arrow_rect(false).get_center()
+	var right: Vector2 = input._arrow_rect(true).get_center()
+	touch(0, left, true)
+	touch(1, gas, true)
+	for i in 20: await physics_frame
+	check(input.steering < -0.8 and input.throttle > 0.5, "Seta esquerda e acelerador funcionam com dois dedos")
+	touch(2, right, true)
+	for i in 20: await physics_frame
+	check(absf(input.steering) < 0.01, "Duas setas pressionadas centralizam a direcao")
+	touch(0, left, false)
+	for i in 20: await physics_frame
+	check(input.steering > 0.8, "Soltar esquerda preserva a seta direita pressionada")
+	drag(2, right-Vector2(0, 200))
+	for i in 20: await physics_frame
+	check(absf(input.steering) < 0.01 and input.throttle > 0.5, "Sair da area da seta libera a direcao sem soltar acelerador")
+	drag(2, right)
+	for i in 20: await physics_frame
+	check(input.steering > 0.8, "Retornar a seta com o mesmo dedo retoma a direcao")
+	touch(2, right, false, true)
+	touch(1, gas, false)
+	for i in 20: await physics_frame
+	check(absf(input.steering) < 0.01 and input.throttle == 0, "Cancelar seta e soltar pedal nao deixa controles presos")
+	input._set_mode(input.SteeringMode.MOTION, false)
+	touch(3, right, true)
+	for i in 20: await physics_frame
+	check(input.steering > 0.8, "Setas continuam disponiveis no modo giroscopio sem sensor")
+	touch(4, gas, true)
+	touch(5, input._mode_rect().get_center(), true)
+	await process_frame
+	check(input.steering_mode == input.SteeringMode.ARROWS and input.throttle == 0 and input.pointers.is_empty(), "Botao visivel troca modo e libera todos os dedos")
+	input.reverse = true
+	input._set_mode(input.SteeringMode.MOTION, false)
+	check(input.reverse, "Trocar modo de direcao preserva a marcha re")
+	input.motion.step(1.0/60, Vector3(0, -9.81, 0), Vector3.ZERO, 2.5)
+	touch(6, input._calibrate_rect().get_center(), true)
+	await process_frame
+	check(input.motion.pending_calibration and input.reverse, "Botao calibrar solicita novo neutro e preserva a marcha")
 	input.clear()
 	input.simulated = true
 	var points: PackedVector3Array = Track.sample()

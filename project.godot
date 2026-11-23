@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="FPV Racer"
-config/version="0.4.0"
+config/version="0.5.0"
 config/icon="res://icon.svg"
 boot_splash/show_image=false
 run/main_scene="res://main.tscn"
@@ -31,6 +31,9 @@ window/stretch/aspect="expand"
 [input_devices]
 
 pointing/emulate_mouse_from_touch=false
+sensors/enable_accelerometer=true
+sensors/enable_gravity=true
+sensors/enable_gyroscope=true
 
 [physics]
 
