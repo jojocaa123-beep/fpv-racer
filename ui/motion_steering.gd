@@ -7,6 +7,7 @@ var value: float = 0.0
 var ready: bool = false
 var pending_calibration: bool = true
 var missing_time: float = 0.0
+var gravity_direction := Vector3(0, -1, 0)
 
 func calibrate() -> void:
 	ready = false
@@ -18,11 +19,14 @@ func step(dt: float, gravity: Vector3, gyro: Vector3, sensitivity: float) -> flo
 	if dt <= 0.0 or not is_finite(dt):
 		return value
 	var h: float = minf(dt, 0.1)
-	var has_reference: bool = gravity.is_finite() and Vector2(gravity.x, gravity.y).length() > 1.8
-	var angular_speed: float = -gyro.z if gyro.is_finite() else 0.0
+	var has_reference: bool = gravity.is_finite() and gravity.length() > 4.0
+	if has_reference:
+		gravity_direction = gravity.normalized()
+	# Projeta o giro no eixo de inclinacao lateral, mesmo com o celular deitado.
+	var angular_speed: float = (gravity_direction.y*gyro.z-gravity_direction.z*gyro.y)/sqrt(maxf(0.04, 1.0-gravity_direction.x*gravity_direction.x)) if gyro.is_finite() else 0.0
 	if has_reference:
 		missing_time = 0.0
-		var measured: float = atan2(gravity.x, -gravity.y)
+		var measured: float = asin(clampf(gravity_direction.x, -1.0, 1.0))
 		if not ready:
 			roll = measured
 			ready = true

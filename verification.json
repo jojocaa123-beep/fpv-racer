@@ -13,7 +13,7 @@
       "failed": 0
     },
     "motion_steering": {
-      "checks": 12,
+      "checks": 15,
       "failed": 0
     }
   },
@@ -42,5 +42,6 @@
   "money_spent": 0,
   "motion_sensor_streams_simulated": true,
   "iphone_motion_hardware_tested": false,
-  "desktop_new_controls_reviewed": false
+  "desktop_new_controls_reviewed": true,
+  "motion_flat_and_upright_tested_with_simulated_data": true
 }

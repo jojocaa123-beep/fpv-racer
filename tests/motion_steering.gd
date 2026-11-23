@@ -58,8 +58,21 @@ func _initialize() -> void:
 		output.append(sample.value)
 	check(absf(output[0]-output[2]) < 0.025, "Resposta consistente em trinta, sessenta e cento e vinte Hz")
 	model.calibrate()
-	settle(model, 179)
-	settle(model, -161)
-	check(model.value > 0.55 and model.value < 0.7, "Filtro atravessa a fronteira angular sem inverter o volante")
+	for i in 30:
+		model.step(1.0/60, Vector3(0, 0, -9.81), Vector3.ZERO, 2.5)
+	check(model.ready and absf(model.value) < 0.001, "Celular quase horizontal tambem pode calibrar o neutro")
+	for i in 60:
+		model.step(1.0/60, Vector3(sin(deg_to_rad(20)), 0, -cos(deg_to_rad(20)))*9.81, Vector3.ZERO, 2.5)
+	check(model.value > 0.55 and model.value < 0.7, "Celular deitado mantem direcao proporcional ao inclinar")
+	model.calibrate()
+	model.step(1.0/60, Vector3(0, 0, -9.81), Vector3.ZERO, 2.5)
+	for i in 6:
+		model.step(1.0/60, Vector3(0, 0, -9.81), Vector3(0, 2, 0), 2.5)
+	check(model.value > 0.06, "Giroscopio usa o eixo correto com o celular deitado")
+	model.calibrate()
+	for i in 60:
+		var pitch: float = (i+1)*PI/120.0
+		model.step(1.0/60, Vector3(0, -sin(pitch), -cos(pitch))*9.81, Vector3(1.0, 0, 0), 2.5)
+	check(absf(model.value) < 0.001, "Mudar o angulo de visualizacao sem inclinar lateralmente nao vira o carro")
 	print("RESULT checks=", checks, " failed=", failed)
 	quit(0 if failed == 0 else 1)

@@ -34,8 +34,9 @@ projeto; nao sao gravacoes de um carro real. Os graficos ainda sao simples.
 
 - 31 checks de fisica e pneus passaram dentro do Godot.
 - 22 checks de eventos de toque, setas, cancelamento, pausa e cronometragem passaram.
-- 12 checks do filtro de movimento passaram com leituras simuladas: sentido,
-  calibracao, tremor, deriva, perda do sensor e taxas de 30, 60 e 120 Hz.
+- 15 checks do filtro de movimento passaram com leituras simuladas: sentido,
+  calibracao, tremor, deriva, perda do sensor, celular em pe ou deitado e
+  taxas de 30, 60 e 120 Hz.
   O sensor fisico do iPhone ainda precisa de verificacao no aparelho.
 - Um piloto automatico de teste, que atua somente nos pedais e na direcao,
   completou duas voltas validas: aproximadamente **40,84 s** e **40,44 s**.
