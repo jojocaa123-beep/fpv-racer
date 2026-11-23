@@ -27,8 +27,8 @@ direita tambem funcionam como controle manual no modo de movimento. Soltar ou
 cancelar um toque libera a direcao. Setas opostas se anulam.
 
 Ha cockpit, volante animado, pedais analogicos, freio de mao, pausa e FOV ajustavel.
-O HUD ficou menor, com botoes de direcao visiveis e calibracao fora do menu. Motor e pneus usam sons sintetizados no
-projeto; nao sao gravacoes de um carro real. Os graficos ainda sao simples.
+O HUD ficou menor, com botoes de direcao visiveis e calibracao fora do menu.
+Motor e pneus usam sons sintetizados no projeto; nao sao gravacoes de um carro real. Os graficos ainda sao simples.
 
 ## Verificacao realizada
 
@@ -47,16 +47,18 @@ projeto; nao sao gravacoes de um carro real. Os graficos ainda sao simples.
   tambem passaram. A oscilacao inicial em repouso foi corrigida.
 - O cockpit e o menu foram inspecionados em uma janela real. Aceleracao e
   reinicio foram acionados pelo teclado nessa janela.
-- O projeto **Xcode foi exportado em Linux** com o template oficial de iOS.
-- A versao anterior, 0.4, foi compilada em macOS arm64 com Xcode 26.3 / SDK iOS 26.2.
-  O novo IPA 0.5 esta aguardando a compilacao remota.
+- O projeto iOS 0.5 foi exportado e compilado em macOS com **Xcode 26.3 / SDK iOS 26.2**.
+  O IPA passou na verificacao do ZIP, Info.plist, executavel Mach-O arm64 e
+  presenca do modulo de direcao por movimento no pacote do jogo.
+- As 68 verificacoes e duas voltas passaram no [build 5](https://github.com/jojocaa123-beep/fpv-racer/actions/runs/45230208823).
 - O instalador de CI para Linux foi executado e seu download oficial teve o
   SHA256 conferido. Os testes tambem passaram em uma copia limpa do codigo,
   sem cache do editor. Os resultados desta entrega estao em `verification.json`.
 
 A simulacao e os controles da versao 0.5 foram verificados em desktop.
 Ainda faltam assinatura pessoal, instalacao, desempenho, temperatura,
-inclinacao e controle fisico em um iPhone. O IPA de desenvolvimento requer assinatura pessoal para instalar. A meta de 60 FPS e configuracao, nao uma medicao no aparelho.
+inclinacao e controle fisico em um iPhone. O IPA de desenvolvimento requer assinatura pessoal para instalar.
+A meta de 60 FPS e configuracao, nao uma medicao no aparelho.
 
 ## Abrir e verificar
 
@@ -88,12 +90,15 @@ O workflow `.github/workflows/ios-free.yml` foi preparado para runners padrao
 gratuitos em repositorio publico. Primeiro verifica a simulacao em Linux,
 depois compila em macOS e guarda o arquivo em um release de rascunho. O fluxo
 nao usa armazenamento de artifacts do Actions. O historico de verificacao e os
-resultados da versao atual estao em `verification.json`.
+resultados da versao atual estao em `verification.json`. O runner atual e o
+[macos-15-intel padrao](https://docs.github.com/en/actions/reference/runners/github-hosted-runners),
+gratuito em repositorios publicos.
 O workflow inicia ao enviar alteracoes do jogo
 para `main`, ou manualmente na aba Actions. O log de uma etapa com falha e
 exibido no CI, preservando o codigo de erro do Godot ou do Xcode.
 
 Cada IPA gerado fica em um release de rascunho, acessivel ao dono do repositorio.
+A versao 0.5 desta entrega esta no release `ios-5-1`.
 Para teste pessoal, ferramentas gratuitas de sideload no Windows podem assinar
 com Apple ID gratuito, com renovacao em sete dias. O dispositivo informado para a
 validacao e um iPhone 14, com acesso a PC Windows 10/11. Nao prometer
