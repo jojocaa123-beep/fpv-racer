@@ -92,8 +92,14 @@ Motor e pneus usam sons sintetizados no projeto; nao sao gravacoes de um carro r
 - O HUD de pneus/forca G e o menu foram inspecionados no renderizador GL
   Compatibility. O renderizador mobile nao iniciou neste ambiente Linux por
   falta de uma extensao Vulkan; a conferencia de Metal no iPhone esta pendente.
-- A compilacao iOS 0.8 esta pendente. O pacote sera conferido depois da
-  compilacao; os dados da entrega ficarao em `verification.json`.
+- O fantasma, o delta e um setor concluido foram conferidos na imagem real
+  renderizada em desktop. O renderizador Metal e os sensores do iPhone seguem
+  pendentes de teste no aparelho.
+- O iOS 0.8 foi compilado com Xcode 26.3 / SDK iOS 26.2. O IPA passou na
+  verificacao de ZIP, Info.plist, executavel arm64 e presenca dos modulos de
+  direcao, feedback, circuito, fantasma e progresso no pacote do jogo.
+- As 103 verificacoes, duas voltas e compilacao iOS passaram no
+  [build 8](https://github.com/jojocaa123-beep/fpv-racer/actions/runs/45439619345).
 - O instalador de CI para Linux foi executado e seu download oficial teve o
   SHA256 conferido. Os testes tambem passaram em uma copia limpa do codigo,
   sem cache do editor. Os resultados desta entrega estao em `verification.json`.
@@ -141,7 +147,7 @@ para `main`, ou manualmente na aba Actions. O log de uma etapa com falha e
 exibido no CI, preservando o codigo de erro do Godot ou do Xcode.
 
 Cada IPA gerado fica em um release de rascunho, acessivel ao dono do repositorio.
-O release da versao 0.8 sera registrado depois da compilacao.
+A versao 0.8 desta entrega esta no release `ios-8-1`.
 Para teste pessoal, ferramentas gratuitas de sideload no Windows podem assinar
 com Apple ID gratuito, com renovacao em sete dias. O dispositivo informado para a
 validacao e um iPhone 14, com acesso a PC Windows 10/11. Nao prometer
