@@ -58,5 +58,5 @@ jobs:
         run: |
           gh release create "ios-$GITHUB_RUN_NUMBER-$GITHUB_RUN_ATTEMPT" \
             "$RUNNER_TEMP/fpv-ios/FPVRacer-unsigned.ipa" \
-            --target "$GITHUB_SHA" --draft --title "FPV Racer 0.7 - IPA sem assinatura" \
+            --target "$GITHUB_SHA" --draft --title "FPV Racer 0.8 - IPA sem assinatura" \
             --notes "Build de desenvolvimento. Requer assinatura pessoal antes de instalar. Validacao em iPhone ainda pendente."

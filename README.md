@@ -1,4 +1,4 @@
-# FPV Racer 0.7 — sensacao de pilotagem e ajustes graficos
+# FPV Racer 0.8 — contra o relogio, setores e fantasma
 
 Simulador de carro para celular, em primeira pessoa no cockpit. Referencia de
 conducao: Live for Speed. Prioridades: fisica, resposta dos controles e baixo
@@ -19,6 +19,20 @@ as forcas aplicadas nos contatos, sem correcao artificial da orientacao.
 ABS, TC e ajuda de direcao sao opcionais. O circuito de treino tem cerca de
 636 m, largura de 12 m, grama com aderencia menor, oito checkpoints e tempos
 de volta com invalidacao por corte. Melhores tempos e ajustes sao locais.
+
+O treino agora tem tres setores e comparacao de tempo com a melhor volta gravada.
+O delta e estimado no mesmo ponto do circuito, usando projecao entre checkpoints
+ordenados: negativo indica vantagem, positivo indica atraso. O fantasma
+translucido reproduz a posicao e orientacao dessa volta, com interpolacao entre
+amostras de 20 Hz. Ele desaparece perto do piloto para deixar o para-brisa livre.
+A opcao FANTASMA no menu fica salva; o delta e a gravacao continuam disponiveis.
+
+Somente voltas validas completas substituem a gravacao, quando sao mais rapidas.
+Cortes, reinicios e tentativas mais lentas preservam a referencia. A gravacao local
+usa arquivo JSON com substituicao atomica, identificador de circuito e limites de
+tamanho e duracao (10 minutos). Tempos antigos continuam preservados; a referencia
+visual precisa de uma volta gravada a partir desta versao. Nao ha uma volta
+preenchida artificialmente na primeira abertura.
 
 A direcao por movimento e o modo inicial no iPhone: giroscopio e gravidade
 combinados, calibracao do neutro, zona morta e sensibilidade ajustavel. O botao
@@ -61,10 +75,13 @@ Motor e pneus usam sons sintetizados no projeto; nao sao gravacoes de um carro r
   O sensor fisico do iPhone ainda precisa de verificacao no aparelho.
 - 14 checks de aceleracao medida, camera a 30/60/120 Hz, limites em impactos,
   frenagem real, marcas de pneu, toques nas opcoes graficas e preferencias passaram.
+- 21 checks de gravacao/reproducao, delta, setores, persistencia, arquivos
+  danificados, tentativas invalidas e toque na opcao FANTASMA passaram.
 - Um piloto automatico de teste, que atua somente nos pedais e na direcao,
   completou duas voltas validas: aproximadamente **40,84 s** e **40,44 s**.
   Velocidade maxima observada: **73,9 km/h**. Desvio lateral maximo em relacao
-  ao centro da pista: **1,42 m**, sem sair da pista.
+  ao centro da pista: **1,42 m**, sem sair da pista. A melhor volta gerou
+  810 amostras, com setores de 16,015 s, 10,349 s e 14,079 s.
 - No ensaio em linha reta: aproximadamente **44,7 km/h em 3 segundos**; o teste
   de frenagem subsequente terminou parado. Re, curva, grama, pausa e reinicio
   tambem passaram. A oscilacao inicial em repouso foi corrigida.
@@ -75,16 +92,13 @@ Motor e pneus usam sons sintetizados no projeto; nao sao gravacoes de um carro r
 - O HUD de pneus/forca G e o menu foram inspecionados no renderizador GL
   Compatibility. O renderizador mobile nao iniciou neste ambiente Linux por
   falta de uma extensao Vulkan; a conferencia de Metal no iPhone esta pendente.
-- O iOS 0.7 foi compilado com Xcode 26.3 / SDK iOS 26.2. O IPA passou na
-  verificacao de ZIP, Info.plist, executavel arm64 e presenca dos modulos de
-  movimento, cockpit, circuito, feedback, camera e marcas de pneu no pacote.
-- As 82 verificacoes, duas voltas e compilacao iOS passaram no
-  [build 7](https://github.com/jojocaa123-beep/fpv-racer/actions/runs/45284966181).
+- A compilacao iOS 0.8 esta pendente. O pacote sera conferido depois da
+  compilacao; os dados da entrega ficarao em `verification.json`.
 - O instalador de CI para Linux foi executado e seu download oficial teve o
   SHA256 conferido. Os testes tambem passaram em uma copia limpa do codigo,
   sem cache do editor. Os resultados desta entrega estao em `verification.json`.
 
-A simulacao e os controles da versao 0.7 foram verificados em desktop.
+A simulacao e os controles da versao 0.8 foram verificados em desktop.
 Ainda faltam assinatura pessoal, instalacao, desempenho, temperatura,
 inclinacao e controle fisico em um iPhone. O IPA de desenvolvimento requer assinatura pessoal para instalar.
 A meta de 60 FPS e configuracao, nao uma medicao no aparelho.
@@ -127,7 +141,7 @@ para `main`, ou manualmente na aba Actions. O log de uma etapa com falha e
 exibido no CI, preservando o codigo de erro do Godot ou do Xcode.
 
 Cada IPA gerado fica em um release de rascunho, acessivel ao dono do repositorio.
-A versao 0.7 desta entrega esta no release `ios-7-1`.
+O release da versao 0.8 sera registrado depois da compilacao.
 Para teste pessoal, ferramentas gratuitas de sideload no Windows podem assinar
 com Apple ID gratuito, com renovacao em sete dias. O dispositivo informado para a
 validacao e um iPhone 14, com acesso a PC Windows 10/11. Nao prometer

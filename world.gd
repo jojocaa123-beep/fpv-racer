@@ -5,8 +5,18 @@ const Vehicle = preload("res://physics/car.gd")
 const Controls = preload("res://ui/controls.gd")
 const LapModel = preload("res://physics/laps.gd")
 const Sound = preload("res://sound.gd")
+const Ghost = preload("res://physics/ghost.gd")
+const Progress = preload("res://physics/track_progress.gd")
+const GhostVisual = preload("res://visuals/ghost_car.gd")
 const TireMarks = preload("res://visuals/tire_marks.gd")
 const CircuitVisuals = preload("res://visuals/circuit.gd")
+var ghost = Ghost.new()
+var progress = Progress.new()
+var ghost_visual: Node3D
+var previous_car_pose := Transform3D.IDENTITY
+var delta: float = 0.0
+var delta_ready: bool = false
+var ghost_saved_at: float = -100.0
 var tire_marks: MultiMeshInstance3D
 var sun: DirectionalLight3D
 var car
@@ -21,10 +31,15 @@ func _ready() -> void:
 	Engine.max_fps = 60
 	samples = Track.sample()
 	laps.configure(samples)
+	progress.configure(samples)
+	ghost.track_length = progress.length
+	ghost.load_best("user://ghost-v1.json")
 	var record := ConfigFile.new()
 	if record.load("user://records.cfg") == OK:
 		var best: float = float(record.get_value("practice", "layout1", 0.0))
 		laps.best_time = best if is_finite(best) and best > 0 else 0.0
+	if ghost.has_reference() and (laps.best_time <= 0 or ghost.best_time < laps.best_time):
+		laps.best_time = ghost.best_time
 	var env := WorldEnvironment.new()
 	var settings := Environment.new()
 	settings.background_mode = Environment.BG_SKY
@@ -74,6 +89,9 @@ func _ready() -> void:
 	tire_marks = TireMarks.new()
 	tire_marks.car = car
 	add_child(tire_marks)
+	ghost_visual = GhostVisual.new()
+	add_child(ghost_visual)
+	previous_car_pose = car.global_transform
 	controls.car = car
 	var audio = Sound.new()
 	audio.car = car
@@ -99,7 +117,22 @@ func _physics_process(dt: float) -> void:
 	if car.global_basis.y.dot(Vector3.UP) < 0.2:
 		invalid = "CARRO CAPOTADO"
 	var old_best: float = laps.best_time
+	var old_completed: int = laps.completed
 	laps.step(car.global_position, clock, invalid)
+	if laps.crossing_gate == 0:
+		var fraction: float = clampf((laps.crossing_time-(clock-dt))/dt, 0, 1)
+		var crossing_pose: Transform3D = previous_car_pose.interpolate_with(car.global_transform, fraction)
+		if laps.completed != old_completed and ghost.finish(laps.last_valid, laps.last_time, crossing_pose, laps.last_sectors):
+			if ghost.save_best("user://ghost-v1.json") == OK: ghost_saved_at = clock
+		ghost.begin(crossing_pose)
+	if laps.running and laps.valid:
+		ghost.sample(clock-laps.started_at, car.global_transform, progress.project(car.global_position, laps.expected))
+	else:
+		ghost.cancel_recording()
+	delta_ready = laps.running and laps.valid and ghost.has_reference()
+	delta = clock-laps.started_at-ghost.time_at_distance(progress.project(car.global_position, laps.expected)) if delta_ready else 0.0
+	ghost_visual.replay(ghost, clock-laps.started_at, car.global_position, controls.ghost_enabled and laps.running and laps.valid)
+	previous_car_pose = car.global_transform
 	if laps.best_time != old_best:
 		var record := ConfigFile.new()
 		record.set_value("practice", "layout1", laps.best_time)
@@ -109,6 +142,10 @@ func restart() -> void:
 	car.reset_car()
 	tire_marks.break_trails()
 	laps.reset_attempt()
+	ghost.cancel_recording()
+	ghost_visual.visible = false
+	delta_ready = false
+	previous_car_pose = car.global_transform
 	offroad_time = 0.0
 
 func _make_road(material: Material, white: Material, red: Material) -> void:

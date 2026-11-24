@@ -74,6 +74,11 @@ func _run() -> void:
 				bad_laps += 1
 			print("LAP ", previous_completed, " time=", game.laps.last_time, " valid=", game.laps.last_valid)
 		if previous_completed >= 2:
+			if not game.ghost.has_reference() or game.ghost.best_times.size() < 500 or game.ghost.best_sectors.size() != 3 or absf(game.ghost.best_time-game.laps.last_time) > 0.01:
+				print("FAIL duas voltas nao geraram fantasma e setores consistentes")
+				quit(1)
+				return
+			print("GHOST frames=", game.ghost.best_times.size(), " duration=", game.ghost.best_time, " sectors=", game.ghost.best_sectors)
 			print("RESULT laps=", previous_completed, " invalid=", bad_laps, " top_kmh=", top_speed*3.6, " max_lateral_m=", max_error)
 			game.queue_free()
 			await process_frame

@@ -15,8 +15,14 @@ var completed: int = 0
 var last_time: float = 0.0
 var last_valid: bool = false
 var best_time: float = 0.0
+var split_times := PackedFloat64Array()
+var last_sectors := PackedFloat64Array()
+var crossing_gate: int = -1
+var crossing_time: float = 0.0
 
 func configure(points: PackedVector3Array) -> void:
+	centers.clear()
+	forwards.clear()
 	for i in 8:
 		var k: int = int(i * points.size() / 8.0)
 		centers.append(points[k])
@@ -24,6 +30,8 @@ func configure(points: PackedVector3Array) -> void:
 
 func reset_attempt() -> void:
 	has_previous = false
+	split_times = PackedFloat64Array()
+	crossing_gate = -1
 	expected = 0
 	running = false
 	valid = true
@@ -35,6 +43,7 @@ func invalidate(message: String) -> void:
 		reason = message
 
 func step(position: Vector3, now: float, invalid_reason: String = "") -> void:
+	crossing_gate = -1
 	if not position.is_finite() or not is_finite(now):
 		reset_attempt()
 		return
@@ -53,13 +62,19 @@ func step(position: Vector3, now: float, invalid_reason: String = "") -> void:
 			var right: Vector3 = forwards[expected].cross(Vector3.UP)
 			if absf((crossing-centers[expected]).dot(right)) <= 6:
 				var crossed_at: float = lerpf(previous_time, now, fraction)
+				crossing_gate = expected
+				crossing_time = crossed_at
+				if running and expected in [3, 5]:
+					split_times.append(crossed_at-started_at)
 				if expected == 0:
 					if running:
 						last_time = crossed_at - started_at
+						last_sectors = PackedFloat64Array([split_times[0], split_times[1]-split_times[0], last_time-split_times[1]]) if split_times.size() == 2 else PackedFloat64Array()
 						last_valid = valid
 						completed += 1
 						if valid and (best_time <= 0 or last_time < best_time):
 							best_time = last_time
+					split_times = PackedFloat64Array()
 					started_at = crossed_at
 					running = true
 					valid = true

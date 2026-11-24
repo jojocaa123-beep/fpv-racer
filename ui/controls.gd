@@ -19,6 +19,7 @@ var fov: float = 65.0
 var volume: float = 0.6
 var camera_motion: bool = true
 var graphics_quality: int = 1
+var ghost_enabled: bool = true
 var simulated: bool = false
 var paused: bool = false
 var pointers: Dictionary = {}
@@ -60,6 +61,7 @@ func _ready() -> void:
 		fov = clampf(float(prefs.get_value("driving", "fov", 65.0)), 55, 75)
 		sensitivity = clampf(float(prefs.get_value("driving", "sensitivity", 2.5)), 1.5, 3.5)
 		volume = clampf(float(prefs.get_value("driving", "volume", 0.6)), 0, 1)
+		ghost_enabled = bool(prefs.get_value("driving", "ghost_enabled", true))
 		camera_motion = bool(prefs.get_value("driving", "camera_motion", true))
 		graphics_quality = clampi(int(prefs.get_value("driving", "graphics_quality", 1)), 0, 2)
 	motion.calibrate()
@@ -135,7 +137,7 @@ func _input(event: InputEvent) -> void:
 func _begin(id: int, p: Vector2) -> void:
 	_end(id)
 	if paused:
-		for i in 12:
+		for i in 13:
 			if _menu_rect(i).has_point(p):
 				_option(i)
 				return
@@ -262,6 +264,7 @@ func _option(index: int) -> void:
 		11:
 			graphics_quality = (graphics_quality+1)%3
 			world.apply_graphics_quality()
+		12: ghost_enabled = not ghost_enabled
 		9:
 			world.restart()
 			motion.calibrate()
@@ -271,7 +274,7 @@ func _option(index: int) -> void:
 
 func _save_preferences() -> void:
 	var prefs := ConfigFile.new()
-	for key in ["steer_assist", "tc", "steering_mode", "fov", "sensitivity", "volume", "camera_motion", "graphics_quality"]:
+	for key in ["steer_assist", "tc", "steering_mode", "fov", "sensitivity", "volume", "camera_motion", "graphics_quality", "ghost_enabled"]:
 		prefs.set_value("driving", key, get(key))
 	prefs.set_value("driving", "abs", abs_enabled)
 	prefs.save("user://preferences.cfg")
@@ -294,14 +297,14 @@ func _draw() -> void:
 	if paused:
 		draw_rect(Rect2(0, 0, width, 720), Color(0.015, 0.025, 0.04, 0.95))
 		_text(Vector2(width*0.5-230, 82), "PAUSA / AJUSTES", 28)
-		var labels: Array[String] = ["RETOMAR", "DIREÇÃO: "+_mode_name(), "CALIBRAR INCLINAÇÃO", "AJUDA DE DIREÇÃO: "+_on(steer_assist), "ABS: "+_on(abs_enabled), "CONTROLE DE TRAÇÃO: "+_on(tc), "CAMPO DE VISÃO: %d" % fov, "SENSIBILIDADE: %.1f" % sensitivity, "VOLUME: %d%%" % (volume*100), "REINICIAR TREINO", "CÂMERA: "+("DINÂMICA" if camera_motion else "FIXA"), "GRÁFICOS: "+["ECONÔMICO", "EQUILIBRADO", "ALTO"][graphics_quality]]
-		for i in 12:
+		var labels: Array[String] = ["RETOMAR", "DIREÇÃO: "+_mode_name(), "CALIBRAR INCLINAÇÃO", "AJUDA DE DIREÇÃO: "+_on(steer_assist), "ABS: "+_on(abs_enabled), "CONTROLE DE TRAÇÃO: "+_on(tc), "CAMPO DE VISÃO: %d" % fov, "SENSIBILIDADE: %.1f" % sensitivity, "VOLUME: %d%%" % (volume*100), "REINICIAR TREINO", "CÂMERA: "+("DINÂMICA" if camera_motion else "FIXA"), "GRÁFICOS: "+["ECONÔMICO", "EQUILIBRADO", "ALTO"][graphics_quality], "FANTASMA: "+_on(ghost_enabled)]
+		for i in 13:
 			_button(_menu_rect(i), labels[i], false, 17)
 		_text(Vector2(width*0.5-230, 658), "Calibre segurando o celular na posição de pilotagem.", 15)
 		_text(Vector2(width*0.5-230, 683), "As setas também funcionam no modo giroscópio.", 15, GREEN)
 		return
 	draw_style_box(skin, Rect2(20, 18, 238, 105))
-	_text(Vector2(32, 43), "TREINO LIVRE  /  VOLTA %d" % (world.laps.completed+1), 14)
+	_text(Vector2(32, 43), "CONTRA O RELÓGIO  /  VOLTA %d" % (world.laps.completed+1), 14)
 	_text(Vector2(32, 72), _clock(world.clock-world.laps.started_at) if world.laps.running else "--:--.---", 23)
 	_text(Vector2(32, 94), "Melhor  "+_clock(world.laps.best_time), 13)
 	_text(Vector2(32, 113), "Última   "+_clock(world.laps.last_time)+(" X" if world.laps.last_time > 0 and not world.laps.last_valid else ""), 13)
@@ -330,6 +333,7 @@ func _draw() -> void:
 	draw_rect(Rect2(center_x-72, 90, 144, 4), Color(0.3, 0.33, 0.36))
 	draw_rect(Rect2(center_x-72, 90, 144*clampf((car.gearbox.rpm-900)/6000.0, 0, 1), 4), Color.RED if car.gearbox.rpm > 6200 else GREEN)
 	_text(Vector2(center_x-62, 110), "TC %s   ABS %s" % [("*" if car.tc_active else _on(tc)), ("*" if car.abs_active else _on(abs_enabled))], 12)
+	_timing_hud()
 	_feedback_hud(center_x)
 	_pedal(_gas_rect(), throttle, GREEN, "ACELERAR")
 	_pedal(_brake_rect(), brake, Color(0.85, 0.25, 0.2), "FREIO")
@@ -337,6 +341,33 @@ func _draw() -> void:
 	_button(_handbrake_rect(), "FREIO DE MÃO", handbrake, 13)
 	if not OS.has_feature("mobile"):
 		_text(Vector2(center_x-178, 715), "WASD / setas  ·  Espaço: freio de mão  ·  P: pausa", 12)
+
+func _timing_hud() -> void:
+	var reference = world.ghost
+	draw_style_box(skin, Rect2(width-268, 78, 252, 100))
+	_text(Vector2(width-254, 100), "VS MELHOR VOLTA GRAVADA", 12)
+	var tint: Color = GREEN if world.delta < 0 else Color(1, 0.7, 0.35)
+	_text(Vector2(width-254, 136), "%+.3f s" % world.delta if world.delta_ready else "--.--- s", 30, tint if world.delta_ready else Color.WHITE)
+	_text(Vector2(width-254, 163), "REF "+_clock(reference.best_time) if reference.has_reference() else "COMPLETE UMA VOLTA VÁLIDA", 13)
+	var showing_last: bool = world.laps.last_time > 0 and world.clock-world.laps.started_at < 4
+	var values := PackedFloat64Array()
+	if showing_last:
+		values = world.laps.last_sectors
+	else:
+		for i in world.laps.split_times.size():
+			values.append(world.laps.split_times[i]-(world.laps.split_times[i-1] if i > 0 else 0.0))
+	for i in 3:
+		var at := Vector2(20+i*80, 176)
+		draw_style_box(skin, Rect2(at, Vector2(74, 51)))
+		_text(at+Vector2(8, 18), "S%d" % (i+1), 12)
+		var seconds: float = values[i] if values.size() > i else 0.0
+		var color := Color.WHITE
+		if seconds > 0 and reference.best_sectors.size() == 3:
+			color = GREEN if seconds <= reference.best_sectors[i]+0.0001 else Color(1, 0.7, 0.35)
+		if (showing_last and not world.laps.last_valid) or (not showing_last and not world.laps.valid): color = Color(1, 0.45, 0.35)
+		_text(at+Vector2(8, 39), "%.3f" % seconds if seconds > 0 else "--.---", 13, color)
+	if world.clock-world.ghost_saved_at < 4:
+		_text(Vector2(width-264, 200), "NOVA MELHOR GRAVADA", 14, GREEN)
 
 func _feedback_hud(center_x: float) -> void:
 	draw_style_box(skin, Rect2(center_x-310, 18, 204, 98))
