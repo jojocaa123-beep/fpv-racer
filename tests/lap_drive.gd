@@ -4,6 +4,7 @@ const Game = preload("res://main.tscn")
 const Track = preload("res://physics/track.gd")
 const Driving = preload("res://physics/driving_math.gd")
 var game
+var manual_run: bool = false
 var max_error: float = 0.0
 var top_speed: float = 0.0
 
@@ -14,6 +15,7 @@ func _run() -> void:
 	game = Game.instantiate()
 	root.add_child(game)
 	game.controls.simulated = true
+	game.controls.manual_gears = manual_run
 	for i in 150:
 		await physics_frame
 	var points: PackedVector3Array = game.samples
@@ -28,6 +30,9 @@ func _run() -> void:
 			if d < distance:
 				distance = d
 				closest = i
+		if manual_run:
+			if car.gearbox.rpm > 6200: car.request_shift(1)
+			elif car.gearbox.rpm < 2100: car.request_shift(-1)
 		var forward: Vector3 = -car.global_basis.z
 		var right: Vector3 = car.global_basis.x
 		var speed: float = car.linear_velocity.length()
@@ -74,12 +79,12 @@ func _run() -> void:
 				bad_laps += 1
 			print("LAP ", previous_completed, " time=", game.laps.last_time, " valid=", game.laps.last_valid)
 		if previous_completed >= 2:
-			if not game.ghost.has_reference() or game.ghost.best_times.size() < 500 or game.ghost.best_sectors.size() != 3 or absf(game.ghost.best_time-game.laps.last_time) > 0.01:
+			if not game.ghost.has_reference() or game.ghost.best_times.size() < 500 or game.ghost.best_sectors.size() != 3 or (game.ghost.best_time-game.laps.last_time > 0.01):
 				print("FAIL duas voltas nao geraram fantasma e setores consistentes")
 				quit(1)
 				return
 			print("GHOST frames=", game.ghost.best_times.size(), " duration=", game.ghost.best_time, " sectors=", game.ghost.best_sectors)
-			print("RESULT laps=", previous_completed, " invalid=", bad_laps, " top_kmh=", top_speed*3.6, " max_lateral_m=", max_error)
+			print("RESULT mode=", "manual" if manual_run else "automatic", " laps=", previous_completed, " invalid=", bad_laps, " top_kmh=", top_speed*3.6, " max_lateral_m=", max_error)
 			game.queue_free()
 			await process_frame
 			quit(0 if bad_laps == 0 else 1)

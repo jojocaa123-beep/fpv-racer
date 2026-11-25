@@ -125,6 +125,7 @@ func _physics_process(dt: float) -> void:
 		var velocity: Vector3 = linear_velocity + angular_velocity.cross(points[i] - com)
 		road_speed[i] = velocity.dot(forward)
 	var stable: bool = grounded[2] and grounded[3] and absf(omega[2]*RADIUS-road_speed[2]) / maxf(2.0, absf(road_speed[2])) < 0.4 and absf(omega[3]*RADIUS-road_speed[3]) / maxf(2.0, absf(road_speed[3])) < 0.4
+	gearbox.manual = controls.manual_gears
 	var drive: float = gearbox.step(dt, controls.throttle, controls.reverse, omega[2]*60/TAU, omega[3]*60/TAU, stable, planar_speed)
 	var coupling: float = clampf((omega[2]-omega[3])*60/TAU*0.6, -absf(drive)*0.25, absf(drive)*0.25)
 	for i in 4:
@@ -173,6 +174,11 @@ func _physics_process(dt: float) -> void:
 	apply_central_force(-linear_velocity * linear_velocity.length() * 0.42)
 	steering_wheel.rotation.z = -controls.steering * deg_to_rad(160)
 	camera.fov = controls.fov
+
+func request_shift(direction: int) -> bool:
+	gearbox.manual = controls.manual_gears
+	if controls.reverse: return false
+	return gearbox.try_shift(direction, (absf(omega[2])+absf(omega[3]))*15/PI, linear_velocity.length())
 
 func reset_car() -> void:
 	global_transform = spawn_pose

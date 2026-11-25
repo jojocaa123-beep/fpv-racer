@@ -1,8 +1,9 @@
 extends Control
 
+const TrackOverlay = preload("res://ui/track_overlay.gd")
 const MotionSteering = preload("res://ui/motion_steering.gd")
 enum SteeringMode { MOTION, ARROWS, SLIDE }
-enum Role { SLIDE, GAS, BRAKE, HANDBRAKE, LEFT, RIGHT }
+enum Role { SLIDE, GAS, BRAKE, HANDBRAKE, LEFT, RIGHT, SHIFT_DOWN, SHIFT_UP }
 var world
 var car
 var steering: float = 0.0
@@ -20,6 +21,9 @@ var volume: float = 0.6
 var camera_motion: bool = true
 var graphics_quality: int = 1
 var ghost_enabled: bool = true
+var manual_gears: bool = false
+var track_guide: bool = true
+var track_overlay = TrackOverlay.new()
 var simulated: bool = false
 var paused: bool = false
 var pointers: Dictionary = {}
@@ -61,6 +65,8 @@ func _ready() -> void:
 		fov = clampf(float(prefs.get_value("driving", "fov", 65.0)), 55, 75)
 		sensitivity = clampf(float(prefs.get_value("driving", "sensitivity", 2.5)), 1.5, 3.5)
 		volume = clampf(float(prefs.get_value("driving", "volume", 0.6)), 0, 1)
+		manual_gears = bool(prefs.get_value("driving", "manual_gears", false))
+		track_guide = bool(prefs.get_value("driving", "track_guide", true))
 		ghost_enabled = bool(prefs.get_value("driving", "ghost_enabled", true))
 		camera_motion = bool(prefs.get_value("driving", "camera_motion", true))
 		graphics_quality = clampi(int(prefs.get_value("driving", "graphics_quality", 1)), 0, 2)
@@ -117,6 +123,10 @@ func _input(event: InputEvent) -> void:
 			set_paused(not paused)
 		elif not paused and event.keycode == KEY_R:
 			world.restart()
+		elif not paused and event.keycode == KEY_E:
+			car.request_shift(1)
+		elif not paused and event.keycode == KEY_C:
+			car.request_shift(-1)
 		elif not paused and event.keycode == KEY_Q:
 			_toggle_reverse()
 	if event is InputEventScreenTouch:
@@ -137,7 +147,7 @@ func _input(event: InputEvent) -> void:
 func _begin(id: int, p: Vector2) -> void:
 	_end(id)
 	if paused:
-		for i in 13:
+		for i in 15:
 			if _menu_rect(i).has_point(p):
 				_option(i)
 				return
@@ -161,7 +171,11 @@ func _begin(id: int, p: Vector2) -> void:
 		_toggle_reverse()
 		return
 	var role: int = -1
-	if _handbrake_rect().has_point(p):
+	if manual_gears and _shift_rect(false).has_point(p):
+		role = Role.SHIFT_DOWN
+	elif manual_gears and _shift_rect(true).has_point(p):
+		role = Role.SHIFT_UP
+	elif _handbrake_rect().has_point(p):
 		role = Role.HANDBRAKE
 	elif _gas_rect().has_point(p):
 		role = Role.GAS
@@ -174,6 +188,8 @@ func _begin(id: int, p: Vector2) -> void:
 		if _arrow_rect(true).has_point(p): role = Role.RIGHT
 	if role >= 0 and not pointers.values().has(role):
 		pointers[id] = role
+		if role == Role.SHIFT_DOWN or role == Role.SHIFT_UP:
+			car.request_shift(1 if role == Role.SHIFT_UP else -1)
 		if role == Role.SLIDE:
 			anchor = p.x
 			anchor_steering = steering
@@ -265,6 +281,13 @@ func _option(index: int) -> void:
 			graphics_quality = (graphics_quality+1)%3
 			world.apply_graphics_quality()
 		12: ghost_enabled = not ghost_enabled
+		13:
+			var direction: bool = reverse
+			clear()
+			reverse = direction
+			manual_gears = not manual_gears
+			car.gearbox.manual = manual_gears
+		14: track_guide = not track_guide
 		9:
 			world.restart()
 			motion.calibrate()
@@ -274,7 +297,7 @@ func _option(index: int) -> void:
 
 func _save_preferences() -> void:
 	var prefs := ConfigFile.new()
-	for key in ["steer_assist", "tc", "steering_mode", "fov", "sensitivity", "volume", "camera_motion", "graphics_quality", "ghost_enabled"]:
+	for key in ["steer_assist", "tc", "steering_mode", "fov", "sensitivity", "volume", "camera_motion", "graphics_quality", "ghost_enabled", "manual_gears", "track_guide"]:
 		prefs.set_value("driving", key, get(key))
 	prefs.set_value("driving", "abs", abs_enabled)
 	prefs.save("user://preferences.cfg")
@@ -287,7 +310,8 @@ func _arrow_rect(right: bool) -> Rect2: return Rect2(172 if right else 24, 572, 
 func _slide_rect() -> Rect2: return Rect2(24, 572, minf(380, width*0.34), 124)
 func _mode_rect() -> Rect2: return Rect2(24, 514, 180, 42)
 func _calibrate_rect() -> Rect2: return Rect2(216, 514, 134, 42)
-func _menu_rect(i: int) -> Rect2: return Rect2(width*0.5-354+(i%2)*362, 180+floori(i/2.0)*66, 346, 54)
+func _shift_rect(up: bool) -> Rect2: return Rect2(width-144 if up else width-284, 420, 120, 78)
+func _menu_rect(i: int) -> Rect2: return Rect2(width*0.5-354+(i%2)*362, 138+floori(i/2.0)*60, 346, 50)
 func _mode_name() -> String: return ["GIROSCÓPIO", "SETAS", "DESLIZAR"][steering_mode]
 
 func _draw() -> void:
@@ -297,11 +321,11 @@ func _draw() -> void:
 	if paused:
 		draw_rect(Rect2(0, 0, width, 720), Color(0.015, 0.025, 0.04, 0.95))
 		_text(Vector2(width*0.5-230, 82), "PAUSA / AJUSTES", 28)
-		var labels: Array[String] = ["RETOMAR", "DIREÇÃO: "+_mode_name(), "CALIBRAR INCLINAÇÃO", "AJUDA DE DIREÇÃO: "+_on(steer_assist), "ABS: "+_on(abs_enabled), "CONTROLE DE TRAÇÃO: "+_on(tc), "CAMPO DE VISÃO: %d" % fov, "SENSIBILIDADE: %.1f" % sensitivity, "VOLUME: %d%%" % (volume*100), "REINICIAR TREINO", "CÂMERA: "+("DINÂMICA" if camera_motion else "FIXA"), "GRÁFICOS: "+["ECONÔMICO", "EQUILIBRADO", "ALTO"][graphics_quality], "FANTASMA: "+_on(ghost_enabled)]
-		for i in 13:
+		var labels: Array[String] = ["RETOMAR", "DIREÇÃO: "+_mode_name(), "CALIBRAR INCLINAÇÃO", "AJUDA DE DIREÇÃO: "+_on(steer_assist), "ABS: "+_on(abs_enabled), "CONTROLE DE TRAÇÃO: "+_on(tc), "CAMPO DE VISÃO: %d" % fov, "SENSIBILIDADE: %.1f" % sensitivity, "VOLUME: %d%%" % (volume*100), "REINICIAR TREINO", "CÂMERA: "+("DINÂMICA" if camera_motion else "FIXA"), "GRÁFICOS: "+["ECONÔMICO", "EQUILIBRADO", "ALTO"][graphics_quality], "FANTASMA: "+_on(ghost_enabled), "CÂMBIO: "+("MANUAL" if manual_gears else "AUTOMÁTICO"), "MAPA E CURVAS: "+_on(track_guide)]
+		for i in 15:
 			_button(_menu_rect(i), labels[i], false, 17)
 		_text(Vector2(width*0.5-230, 658), "Calibre segurando o celular na posição de pilotagem.", 15)
-		_text(Vector2(width*0.5-230, 683), "As setas também funcionam no modo giroscópio.", 15, GREEN)
+		_text(Vector2(width*0.5-230, 683), "Câmbio manual: botões +/−; teclas E/C no PC.", 15, GREEN)
 		return
 	draw_style_box(skin, Rect2(20, 18, 238, 105))
 	_text(Vector2(32, 43), "CONTRA O RELÓGIO  /  VOLTA %d" % (world.laps.completed+1), 14)
@@ -328,19 +352,25 @@ func _draw() -> void:
 	var center_x: float = width*0.5
 	draw_style_box(skin, Rect2(center_x-90, 18, 180, 98))
 	_text(Vector2(center_x-70, 60), "%3d" % (car.linear_velocity.length()*3.6), 36)
-	_text(Vector2(center_x+36, 56), "R" if reverse else str(car.gearbox.gear), 26, GREEN)
+	_text(Vector2(center_x+20, 56), ("R" if reverse else str(car.gearbox.gear))+(" M" if manual_gears else " A"), 24, GREEN)
 	_text(Vector2(center_x-62, 79), "km/h   %4d rpm" % car.gearbox.rpm, 13)
 	draw_rect(Rect2(center_x-72, 90, 144, 4), Color(0.3, 0.33, 0.36))
 	draw_rect(Rect2(center_x-72, 90, 144*clampf((car.gearbox.rpm-900)/6000.0, 0, 1), 4), Color.RED if car.gearbox.rpm > 6200 else GREEN)
 	_text(Vector2(center_x-62, 110), "TC %s   ABS %s" % [("*" if car.tc_active else _on(tc)), ("*" if car.abs_active else _on(abs_enabled))], 12)
+	if car.gearbox.overrev_block_left > 0:
+		_text(Vector2(center_x-112, 138), "GIRO ALTO: REDUÇÃO BLOQUEADA", 12, Color(1, 0.7, 0.35))
+	if track_guide: track_overlay.draw(self)
 	_timing_hud()
 	_feedback_hud(center_x)
 	_pedal(_gas_rect(), throttle, GREEN, "ACELERAR")
 	_pedal(_brake_rect(), brake, Color(0.85, 0.25, 0.2), "FREIO")
+	if manual_gears:
+		_button(_shift_rect(false), "−  REDUZIR", false, 17)
+		_button(_shift_rect(true), "+  SUBIR", false, 17)
 	_button(_reverse_rect(), "R > D" if reverse else "D > R", false, 16)
 	_button(_handbrake_rect(), "FREIO DE MÃO", handbrake, 13)
 	if not OS.has_feature("mobile"):
-		_text(Vector2(center_x-178, 715), "WASD / setas  ·  Espaço: freio de mão  ·  P: pausa", 12)
+		_text(Vector2(center_x-178, 715), "WASD · Espaço: freio de mão · E/C: marchas · P: pausa", 12)
 
 func _timing_hud() -> void:
 	var reference = world.ghost

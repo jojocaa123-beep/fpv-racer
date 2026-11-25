@@ -1,4 +1,4 @@
-# FPV Racer 0.8 — contra o relogio, setores e fantasma
+# FPV Racer 0.9 — marchas manuais, mapa e indicacao de curvas
 
 Simulador de carro para celular, em primeira pessoa no cockpit. Referencia de
 conducao: Live for Speed. Prioridades: fisica, resposta dos controles e baixo
@@ -10,7 +10,8 @@ ser confundidos com os desta versao.
 
 ## O que roda
 
-Carro de 1.200 kg, tracao traseira, cambio automatico de cinco marchas e re,
+Carro de 1.200 kg, tracao traseira, cambio de cinco marchas e re,
+com modos automatico e manual sequencial,
 suspensao por roda e barras estabilizadoras. O modelo de pneus usa curvas
 analiticas, sensibilidade a carga e limite combinado de forcas longitudinais e
 laterais. A rotacao das rodas e integrada em subpassos adaptativos. O chassi usa
@@ -19,6 +20,18 @@ as forcas aplicadas nos contatos, sem correcao artificial da orientacao.
 ABS, TC e ajuda de direcao sao opcionais. O circuito de treino tem cerca de
 636 m, largura de 12 m, grama com aderencia menor, oito checkpoints e tempos
 de volta com invalidacao por corte. Melhores tempos e ajustes sao locais.
+
+O modo inicial de cambio continua automatico. A opcao CAMBIO no menu permite
+selecionar manual sequencial: botoes + SUBIR / - REDUZIR na tela ou E / C no PC.
+Cada toque troca uma unica marcha, mantendo os outros dedos na direcao e pedais.
+O jogo interrompe o torque por 0,22 s durante a troca. Reducoes que levariam o
+motor acima de 6.700 rpm sao recusadas, considerando tambem a velocidade do
+chassi quando as rodas estao travadas. O limitador continua ativo em manual.
+
+O mapa mostra a pista completa, a largada, sua posicao e a posicao do fantasma.
+O aviso de curva indica sentido e distancia aproximada, calculados a partir da
+geometria do circuito. MAPA E CURVAS no menu permite esconder esses elementos;
+essa escolha e o modo de cambio ficam salvos.
 
 O treino agora tem tres setores e comparacao de tempo com a melhor volta gravada.
 O delta e estimado no mesmo ponto do circuito, usando projecao entre checkpoints
@@ -77,11 +90,15 @@ Motor e pneus usam sons sintetizados no projeto; nao sao gravacoes de um carro r
   frenagem real, marcas de pneu, toques nas opcoes graficas e preferencias passaram.
 - 21 checks de gravacao/reproducao, delta, setores, persistencia, arquivos
   danificados, tentativas invalidas e toque na opcao FANTASMA passaram.
+- 25 checks de marchas, limitador, reducoes seguras, torque durante a troca,
+  toques simultaneos, teclado, preferencias e geometria do mapa/curvas passaram.
 - Um piloto automatico de teste, que atua somente nos pedais e na direcao,
   completou duas voltas validas: aproximadamente **40,84 s** e **40,44 s**.
   Velocidade maxima observada: **73,9 km/h**. Desvio lateral maximo em relacao
   ao centro da pista: **1,42 m**, sem sair da pista. A melhor volta gerou
   810 amostras, com setores de 16,015 s, 10,349 s e 14,079 s.
+- O piloto tambem completou duas voltas validas em manual, solicitando
+  cada troca: **40,825 s** e **40,423 s**, com desvio lateral maximo de **1,42 m**.
 - No ensaio em linha reta: aproximadamente **44,7 km/h em 3 segundos**; o teste
   de frenagem subsequente terminou parado. Re, curva, grama, pausa e reinicio
   tambem passaram. A oscilacao inicial em repouso foi corrigida.
@@ -95,16 +112,13 @@ Motor e pneus usam sons sintetizados no projeto; nao sao gravacoes de um carro r
 - O fantasma, o delta e um setor concluido foram conferidos na imagem real
   renderizada em desktop. O renderizador Metal e os sensores do iPhone seguem
   pendentes de teste no aparelho.
-- O iOS 0.8 foi compilado com Xcode 26.3 / SDK iOS 26.2. O IPA passou na
-  verificacao de ZIP, Info.plist, executavel arm64 e presenca dos modulos de
-  direcao, feedback, circuito, fantasma e progresso no pacote do jogo.
-- As 103 verificacoes, duas voltas e compilacao iOS passaram no
-  [build 8](https://github.com/jojocaa123-beep/fpv-racer/actions/runs/45439619345).
+- A compilacao iOS 0.9 esta pendente. Os modulos e os dados do pacote serao
+  conferidos depois do build e registrados em `verification.json`.
 - O instalador de CI para Linux foi executado e seu download oficial teve o
   SHA256 conferido. Os testes tambem passaram em uma copia limpa do codigo,
   sem cache do editor. Os resultados desta entrega estao em `verification.json`.
 
-A simulacao e os controles da versao 0.8 foram verificados em desktop.
+A simulacao e os controles da versao 0.9 foram verificados em desktop.
 Ainda faltam assinatura pessoal, instalacao, desempenho, temperatura,
 inclinacao e controle fisico em um iPhone. O IPA de desenvolvimento requer assinatura pessoal para instalar.
 A meta de 60 FPS e configuracao, nao uma medicao no aparelho.
@@ -113,7 +127,7 @@ A meta de 60 FPS e configuracao, nao uma medicao no aparelho.
 
 Importe `project.godot` no Godot 4.7.2 e use F5. Nao exige assets pagos ou conta.
 Teclado: WASD/setas, espaco para freio de mao, Q para D/R parado, R para reinicio
-e P/Esc para pausa. O menu permite ajustar as ajudas, FOV e sensibilidade.
+e P/Esc para pausa; E/C sobem/reduzem marchas no modo manual. O menu permite ajustar as ajudas, FOV e sensibilidade.
 No celular, use dedos diferentes para direcao e pedais; mais alto no pedal
 significa maior pressao. No iPhone o modo de movimento calibra a primeira
 leitura valida. Segure o aparelho na posicao de pilotagem e toque CALIBRAR para
@@ -147,7 +161,7 @@ para `main`, ou manualmente na aba Actions. O log de uma etapa com falha e
 exibido no CI, preservando o codigo de erro do Godot ou do Xcode.
 
 Cada IPA gerado fica em um release de rascunho, acessivel ao dono do repositorio.
-A versao 0.8 desta entrega esta no release `ios-8-1`.
+O release da versao 0.9 sera registrado depois da compilacao.
 Para teste pessoal, ferramentas gratuitas de sideload no Windows podem assinar
 com Apple ID gratuito, com renovacao em sete dias. O dispositivo informado para a
 validacao e um iPhone 14, com acesso a PC Windows 10/11. Nao prometer

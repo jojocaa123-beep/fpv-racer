@@ -7,6 +7,8 @@ var rpm: float = 900.0
 var reversing: bool = false
 var limiter: bool = false
 var shift_left: float = 0.0
+var manual: bool = false
+var overrev_block_left: float = 0.0
 
 func reset() -> void:
 	gear = 1
@@ -14,6 +16,21 @@ func reset() -> void:
 	reversing = false
 	limiter = false
 	shift_left = 0.1
+	overrev_block_left = 0.0
+
+func try_shift(direction: int, wheel_rpm: float, speed: float) -> bool:
+	if not manual or reversing or shift_left > 0 or direction not in [-1, 1] or not is_finite(wheel_rpm) or not is_finite(speed):
+		return false
+	var target: int = clampi(gear+direction, 1, RATIOS.size())
+	if target == gear: return false
+	# A velocidade do chassi tambem protege reducoes com rodas travadas.
+	var reference_rpm: float = maxf(absf(wheel_rpm), absf(speed)*60.0/(TAU*0.32))
+	if direction < 0 and reference_rpm*RATIOS[target-1]*3.9 > 6700:
+		overrev_block_left = 0.9
+		return false
+	gear = target
+	shift_left = 0.22
+	return true
 
 func step(dt: float, throttle: float, reverse: bool, left_rpm: float, right_rpm: float, stable: bool, speed: float) -> float:
 	if dt <= 0.0:
@@ -23,12 +40,13 @@ func step(dt: float, throttle: float, reverse: bool, left_rpm: float, right_rpm:
 		reversing = reverse
 		shift_left = 0.15
 	shift_left = maxf(0.0, shift_left - dt)
+	overrev_block_left = maxf(0.0, overrev_block_left-dt)
 	var wheel_rpm: float = (absf(left_rpm) + absf(right_rpm)) * 0.5
-	if wheel_rpm < 10.0 and speed < 0.83:
+	if not manual and wheel_rpm < 10.0 and speed < 0.83:
 		gear = 1
 	var ratio: float = 3.1 if reverse else RATIOS[gear - 1]
 	rpm = move_toward(rpm, clampf(wheel_rpm * ratio * 3.9, 900.0, 7200.0), dt * 20000.0)
-	if not reverse and shift_left <= 0.0:
+	if not manual and not reverse and shift_left <= 0.0:
 		if rpm > 6200.0 and gear < 5 and stable:
 			gear += 1
 			shift_left = 0.22

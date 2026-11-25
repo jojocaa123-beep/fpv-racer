@@ -1,6 +1,6 @@
 {
-  "version": "0.8.0",
-  "recorded_utc": "2026-11-24T16:45:18.133837+00:00",
+  "version": "0.9.0",
+  "recorded_utc": "2026-11-25T21:15:48.975518+00:00",
   "engine": "Godot 4.7.2.stable.official.ed1daf0bf",
   "platform_tested": "Linux x86_64",
   "checks": {
@@ -23,6 +23,10 @@
     "ghost": {
       "checks": 21,
       "failed": 0
+    },
+    "manual_and_navigation": {
+      "checks": 25,
+      "failed": 0
     }
   },
   "driving": {
@@ -41,12 +45,12 @@
     "max_lateral_m": 1.41369295120239
   },
   "desktop_cockpit_and_keyboard_reviewed": true,
-  "fresh_source_ci_checks_passed": true,
-  "ios_xcode_project_exported": true,
-  "macos_compilation_executed": true,
-  "ipa_created": true,
+  "fresh_source_ci_checks_passed": false,
+  "ios_xcode_project_exported": false,
+  "macos_compilation_executed": false,
+  "ipa_created": false,
   "iphone_hardware_tested": false,
-  "remote_build_executed": true,
+  "remote_build_executed": false,
   "money_spent": 0,
   "motion_sensor_streams_simulated": true,
   "iphone_motion_hardware_tested": false,
@@ -78,11 +82,11 @@
   "desktop_time_trial_and_ghost_render_reviewed": true,
   "time_trial": {
     "ghost_frames": 810,
-    "ghost_seconds": 40.4423099559081,
+    "ghost_seconds": 40.4229175754557,
     "sectors_seconds": [
-      16.0149945434165,
-      10.3485691707783,
-      14.0787462417134
+      16.0149825532319,
+      10.3428987940573,
+      14.0650362281665
     ],
     "ghost_sampling_hz": 20,
     "source_rate_consistency_tested_hz": [
@@ -94,39 +98,22 @@
     "desktop_render_with_completed_sector_reviewed": true,
     "desktop_render_delta_seconds": 2.96490973251075
   },
-  "ios_build": {
-    "xcode": "26.3",
-    "sdk": "26.2",
-    "runner": "macos-15-intel",
-    "source_commit": "655b5d37f5d3d23b21e23f5e5c04fb2cdea9608c",
-    "ci_run": "https://github.com/jojocaa123-beep/fpv-racer/actions/runs/45439619345",
-    "artifact": {
-      "file": "FPVRacer-v0.8-unsigned.ipa",
-      "bytes": 24449747,
-      "sha256": "56dd11362576e442708e308fa84ca84848111037b2c475ae9927b82c6784c1cf",
-      "zip_crc_passed": true,
-      "bundle_identifier": "com.prototype.fpvracer",
-      "version": "0.8.0",
-      "build": "8",
-      "minimum_ios": "15.0",
-      "sdk_name": "iphoneos26.2",
-      "sdk_version": "26.2",
-      "architecture": "arm64",
-      "platform": "iPhoneOS",
-      "game_pck_present": true,
-      "motion_steering_module_present": true,
-      "embedded_provisioning_present": false,
-      "signature_resources_present": false,
-      "iphone_hardware_tested": false,
-      "required_device_capabilities": [
-        "iphone-ipad-minimum-performance-a12",
-        "arm64"
-      ],
-      "cockpit_and_circuit_modules_present": true,
-      "feedback_head_motion_and_tire_marks_modules_present": true,
-      "ghost_track_progress_and_replay_modules_present": true,
-      "source_commit": "655b5d37f5d3d23b21e23f5e5c04fb2cdea9608c",
-      "ci_run": "https://github.com/jojocaa123-beep/fpv-racer/actions/runs/45439619345"
-    }
-  }
+  "manual_driving": {
+    "laps": [
+      {
+        "seconds": 40.8247226524888,
+        "valid": true
+      },
+      {
+        "seconds": 40.4229175754557,
+        "valid": true
+      }
+    ],
+    "invalid_laps": 0,
+    "top_kmh": 73.927001953125,
+    "max_lateral_m": 1.41888761520386,
+    "shifts_requested_by_test_driver": true
+  },
+  "manual_map_and_turn_cue_desktop_render_reviewed": true,
+  "overrev_protection_tested_with_locked_wheels": true
 }
