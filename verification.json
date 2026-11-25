@@ -1,6 +1,6 @@
 {
   "version": "0.9.0",
-  "recorded_utc": "2026-11-25T21:15:48.975518+00:00",
+  "recorded_utc": "2026-11-25T21:22:10.220337+00:00",
   "engine": "Godot 4.7.2.stable.official.ed1daf0bf",
   "platform_tested": "Linux x86_64",
   "checks": {
@@ -45,12 +45,12 @@
     "max_lateral_m": 1.41369295120239
   },
   "desktop_cockpit_and_keyboard_reviewed": true,
-  "fresh_source_ci_checks_passed": false,
-  "ios_xcode_project_exported": false,
-  "macos_compilation_executed": false,
-  "ipa_created": false,
+  "fresh_source_ci_checks_passed": true,
+  "ios_xcode_project_exported": true,
+  "macos_compilation_executed": true,
+  "ipa_created": true,
   "iphone_hardware_tested": false,
-  "remote_build_executed": false,
+  "remote_build_executed": true,
   "money_spent": 0,
   "motion_sensor_streams_simulated": true,
   "iphone_motion_hardware_tested": false,
@@ -115,5 +115,41 @@
     "shifts_requested_by_test_driver": true
   },
   "manual_map_and_turn_cue_desktop_render_reviewed": true,
-  "overrev_protection_tested_with_locked_wheels": true
+  "overrev_protection_tested_with_locked_wheels": true,
+  "ios_build": {
+    "xcode": "26.3",
+    "sdk": "26.2",
+    "runner": "macos-15-intel",
+    "source_commit": "33bd4348bac4c6fb220a2b68eff5e06eb41ed679",
+    "ci_run": "https://github.com/jojocaa123-beep/fpv-racer/actions/runs/45702837738",
+    "artifact": {
+      "file": "FPVRacer-v0.9-unsigned.ipa",
+      "bytes": 24457085,
+      "sha256": "769e3634bec416cb7af96ba52635050d6be67592b21eb4d4d9a39bf0122eae8e",
+      "zip_crc_passed": true,
+      "bundle_identifier": "com.prototype.fpvracer",
+      "version": "0.9.0",
+      "build": "9",
+      "minimum_ios": "15.0",
+      "sdk_name": "iphoneos26.2",
+      "sdk_version": "26.2",
+      "architecture": "arm64",
+      "platform": "iPhoneOS",
+      "game_pck_present": true,
+      "motion_steering_module_present": true,
+      "embedded_provisioning_present": false,
+      "signature_resources_present": false,
+      "iphone_hardware_tested": false,
+      "required_device_capabilities": [
+        "iphone-ipad-minimum-performance-a12",
+        "arm64"
+      ],
+      "cockpit_and_circuit_modules_present": true,
+      "feedback_head_motion_and_tire_marks_modules_present": true,
+      "ghost_track_progress_and_replay_modules_present": true,
+      "powertrain_track_guide_and_overlay_modules_present": true,
+      "source_commit": "33bd4348bac4c6fb220a2b68eff5e06eb41ed679",
+      "ci_run": "https://github.com/jojocaa123-beep/fpv-racer/actions/runs/45702837738"
+    }
+  }
 }
