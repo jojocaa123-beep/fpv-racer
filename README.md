@@ -128,8 +128,11 @@ Motor e pneus usam sons sintetizados no projeto; nao sao gravacoes de um carro r
 - O HUD compacto e o completo foram inspecionados em capturas reais, junto
   com a largada e o paddock. O toque na opcao HUD e o salvamento da escolha
   tambem foram conferidos.
-- A compilacao iOS 0.10 esta pendente; os dados do pacote serao registrados
-  depois do build em `verification.json`.
+- O iOS 0.10 foi compilado com Xcode 26.3 / SDK iOS 26.2. O IPA passou na
+  verificacao de ZIP, Info.plist, executavel arm64 e presenca dos modulos de
+  direcao, fisica, fantasma, cambio, mapa, HUD compacto e acabamento no pacote.
+- As 128 verificacoes, quatro voltas e compilacao iOS passaram no
+  [build 10](https://github.com/jojocaa123-beep/fpv-racer/actions/runs/45877902103).
 - O instalador de CI para Linux foi executado e seu download oficial teve o
   SHA256 conferido. Os testes tambem passaram em uma copia limpa do codigo,
   sem cache do editor. Os resultados desta entrega estao em `verification.json`.
@@ -177,7 +180,7 @@ para `main`, ou manualmente na aba Actions. O log de uma etapa com falha e
 exibido no CI, preservando o codigo de erro do Godot ou do Xcode.
 
 Cada IPA gerado fica em um release de rascunho, acessivel ao dono do repositorio.
-O release da versao 0.10 sera registrado depois da compilacao.
+A versao 0.10 desta entrega esta no release `ios-10-1`.
 Para teste pessoal, ferramentas gratuitas de sideload no Windows podem assinar
 com Apple ID gratuito, com renovacao em sete dias. O dispositivo informado para a
 validacao e um iPhone 14, com acesso a PC Windows 10/11. Nao prometer
