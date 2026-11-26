@@ -1,4 +1,4 @@
-# FPV Racer 0.9 — marchas manuais, mapa e indicacao de curvas
+# FPV Racer 0.10 — acabamento do cockpit e HUD compacto
 
 Simulador de carro para celular, em primeira pessoa no cockpit. Referencia de
 conducao: Live for Speed. Prioridades: fisica, resposta dos controles e baixo
@@ -20,6 +20,17 @@ as forcas aplicadas nos contatos, sem correcao artificial da orientacao.
 ABS, TC e ajuda de direcao sao opcionais. O circuito de treino tem cerca de
 636 m, largura de 12 m, grama com aderencia menor, oito checkpoints e tempos
 de volta com invalidacao por corte. Melhores tempos e ajustes sao locais.
+
+O HUD compacto e o modo inicial: cronometro, velocidade, marcha, delta e mapa
+menor deixam mais espaco para enxergar a pista. O menu HUD alterna para COMPLETO,
+com setores, pneus e forca G; a escolha fica salva. Os botoes de direcao,
+pedais, calibracao e marchas mantem suas areas de toque.
+
+O cockpit ganhou paineis de contorno arredondado, materiais com granulado,
+acabamento no volante, ponteiros iluminados e colunas dianteiras mais estreitas.
+O asfalto e a grama usam texturas procedurais de 256 x 256; linhas de borda,
+folhagem em grupos com variacao de cor, colinas mais suaves e edificios de
+paddock compoem o entorno. Os elementos sao originais e gerados pelo codigo.
 
 O modo inicial de cambio continua automatico. A opcao CAMBIO no menu permite
 selecionar manual sequencial: botoes + SUBIR / - REDUZIR na tela ou E / C no PC.
@@ -114,16 +125,16 @@ Motor e pneus usam sons sintetizados no projeto; nao sao gravacoes de um carro r
   pendentes de teste no aparelho.
 - O cambio manual, mapa, seta de curva e menu foram conferidos em capturas
   reais do jogo no desktop.
-- O iOS 0.9 foi compilado com Xcode 26.3 / SDK iOS 26.2. O IPA passou na
-  verificacao de ZIP, Info.plist, executavel arm64 e presenca dos modulos de
-  direcao, feedback, fantasma, cambio, mapa e indicacao de curva no pacote.
-- As 128 verificacoes, quatro voltas e compilacao iOS passaram no
-  [build 9](https://github.com/jojocaa123-beep/fpv-racer/actions/runs/45702837738).
+- O HUD compacto e o completo foram inspecionados em capturas reais, junto
+  com a largada e o paddock. O toque na opcao HUD e o salvamento da escolha
+  tambem foram conferidos.
+- A compilacao iOS 0.10 esta pendente; os dados do pacote serao registrados
+  depois do build em `verification.json`.
 - O instalador de CI para Linux foi executado e seu download oficial teve o
   SHA256 conferido. Os testes tambem passaram em uma copia limpa do codigo,
   sem cache do editor. Os resultados desta entrega estao em `verification.json`.
 
-A simulacao e os controles da versao 0.9 foram verificados em desktop.
+A simulacao e os controles da versao 0.10 foram verificados em desktop.
 Ainda faltam assinatura pessoal, instalacao, desempenho, temperatura,
 inclinacao e controle fisico em um iPhone. O IPA de desenvolvimento requer assinatura pessoal para instalar.
 A meta de 60 FPS e configuracao, nao uma medicao no aparelho.
@@ -166,7 +177,7 @@ para `main`, ou manualmente na aba Actions. O log de uma etapa com falha e
 exibido no CI, preservando o codigo de erro do Godot ou do Xcode.
 
 Cada IPA gerado fica em um release de rascunho, acessivel ao dono do repositorio.
-A versao 0.9 desta entrega esta no release `ios-9-1`.
+O release da versao 0.10 sera registrado depois da compilacao.
 Para teste pessoal, ferramentas gratuitas de sideload no Windows podem assinar
 com Apple ID gratuito, com renovacao em sete dias. O dispositivo informado para a
 validacao e um iPhone 14, com acesso a PC Windows 10/11. Nao prometer

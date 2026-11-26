@@ -9,6 +9,8 @@ func _ready() -> void:
 	_landscape()
 	_markers()
 	_gantry()
+	_edge_lines()
+	_paddock()
 
 static func surface(color: Color, grass: bool) -> StandardMaterial3D:
 	var result := StandardMaterial3D.new()
@@ -16,12 +18,14 @@ static func surface(color: Color, grass: bool) -> StandardMaterial3D:
 	result.roughness = 1.0
 	var noise := FastNoiseLite.new()
 	noise.seed = 2244 if grass else 8637
-	noise.frequency = 0.18 if grass else 0.55
-	var picture := Image.create(128, 128, false, Image.FORMAT_RGB8)
-	for y in 128:
-		for x in 128:
-			var amount: float = noise.get_noise_2d(x, y)*(0.075 if grass else 0.027)
-			picture.set_pixel(x, y, Color(color.r+amount, color.g+amount, color.b+amount*0.5))
+	noise.frequency = 0.025 if grass else 0.65
+	var grain := RandomNumberGenerator.new()
+	grain.seed = 318 if grass else 639
+	var picture := Image.create(256, 256, false, Image.FORMAT_RGB8)
+	for y in 256:
+		for x in 256:
+			var amount: float = noise.get_noise_2d(x, y)*(0.07 if grass else 0.025)+grain.randf_range(-0.018, 0.018)
+			picture.set_pixel(x, y, Color(color.r+amount, color.g+amount, color.b+amount*0.65))
 	picture.generate_mipmaps()
 	result.albedo_texture = ImageTexture.create_from_image(picture)
 	result.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
@@ -70,8 +74,8 @@ func _landscape() -> void:
 		var mesh := SphereMesh.new()
 		mesh.radius = random.randf_range(45, 80)
 		mesh.height = mesh.radius*1.2
-		mesh.radial_segments = 16
-		mesh.rings = 6
+		mesh.radial_segments = 40
+		mesh.rings = 14
 		hill.mesh = mesh
 		hill.material_override = hill_surface
 		hill.position = Vector3(sin(angle)*310, -12, cos(angle)*310)
@@ -79,6 +83,7 @@ func _landscape() -> void:
 		add_child(hill)
 	var trunks: Array[Transform3D] = []
 	var crowns: Array[Transform3D] = []
+	var foliage_colors := PackedColorArray()
 	for i in range(0, samples.size(), 7):
 		for side in [-1, 1]:
 			var at: Vector3 = samples[i]+Track.tangent(samples, i).cross(Vector3.UP)*side*random.randf_range(22, 38)
@@ -86,7 +91,10 @@ func _landscape() -> void:
 				continue
 			var scale_value: float = random.randf_range(0.75, 1.35)
 			trunks.append(Transform3D(Basis.from_scale(Vector3.ONE*scale_value), at+Vector3.UP*1.8*scale_value))
-			crowns.append(Transform3D(Basis.from_scale(Vector3(1, 1.4, 1)*scale_value), at+Vector3.UP*4.3*scale_value))
+			for layer in 3:
+				var offset := Vector3(random.randf_range(-1.1, 1.1), 3.7+layer*0.8, random.randf_range(-0.9, 0.9))*scale_value
+				crowns.append(Transform3D(Basis.from_scale(Vector3(1.0-layer*0.14, 1.0, 0.9)*scale_value), at+offset))
+				foliage_colors.append(Color(0.16, 0.25, 0.11).lightened(random.randf_range(-0.15, 0.2)))
 	var trunk_mesh := CylinderMesh.new()
 	trunk_mesh.top_radius = 0.2
 	trunk_mesh.bottom_radius = 0.32
@@ -94,11 +102,13 @@ func _landscape() -> void:
 	trunk_mesh.radial_segments = 6
 	_batch(trunk_mesh, Shape.material(Color(0.21, 0.16, 0.11)), trunks)
 	var crown_mesh := SphereMesh.new()
-	crown_mesh.radius = 2.4
-	crown_mesh.height = 4.5
-	crown_mesh.radial_segments = 10
-	crown_mesh.rings = 5
-	_batch(crown_mesh, Shape.material(Color(0.18, 0.29, 0.13)), crowns)
+	crown_mesh.radius = 2.2
+	crown_mesh.height = 3.6
+	crown_mesh.radial_segments = 16
+	crown_mesh.rings = 8
+	var leaves := Shape.material(Color.WHITE)
+	leaves.vertex_color_use_as_albedo = true
+	_batch(crown_mesh, leaves, crowns, foliage_colors)
 
 func _markers() -> void:
 	var distance := PackedFloat32Array([0.0])
@@ -133,13 +143,16 @@ func _gantry() -> void:
 	Shape.box(gate, Vector3(13, 0.82, 0.10), Vector3(0, 4.6, 0), dark)
 	Shape.label(gate, "FPV  /  CLUB CIRCUIT", Vector3(0, 4.6, 0.065), 72, 0.011, Color(0.92, 0.95, 0.9))
 
-func _batch(mesh: Mesh, surface_material: Material, transforms: Array[Transform3D]) -> void:
+func _batch(mesh: Mesh, surface_material: Material, transforms: Array[Transform3D], colors: PackedColorArray = PackedColorArray()) -> void:
 	var node := MultiMeshInstance3D.new()
 	var multi := MultiMesh.new()
 	multi.transform_format = MultiMesh.TRANSFORM_3D
+	multi.use_colors = not colors.is_empty()
 	multi.mesh = mesh
 	multi.instance_count = transforms.size()
-	for i in transforms.size(): multi.set_instance_transform(i, transforms[i])
+	for i in transforms.size():
+		multi.set_instance_transform(i, transforms[i])
+		if not colors.is_empty(): multi.set_instance_color(i, colors[i])
 	node.multimesh = multi
 	node.material_override = surface_material
 	add_child(node)
@@ -151,3 +164,32 @@ func _road_clearance(at: Vector3) -> float:
 		var fraction: float = clampf((at-samples[i]).dot(segment)/maxf(0.001, segment.length_squared()), 0, 1)
 		nearest = minf(nearest, at.distance_to(samples[i]+segment*fraction))
 	return nearest
+
+func _edge_lines() -> void:
+	var transforms: Array[Transform3D] = []
+	for i in samples.size():
+		var next: int = (i+1)%samples.size()
+		var forward: Vector3 = samples[next]-samples[i]
+		var right: Vector3 = Track.tangent(samples, i).cross(Vector3.UP)
+		for side in [-1, 1]:
+			transforms.append(Transform3D(Basis.looking_at(forward.normalized(), Vector3.UP)*Basis.from_scale(Vector3(1, 1, forward.length()+0.06)), (samples[i]+samples[next])*0.5+right*5.78*side+Vector3.UP*0.023))
+	var paint := BoxMesh.new()
+	paint.size = Vector3(0.10, 0.001, 1)
+	_batch(paint, Shape.material(Color(0.72, 0.73, 0.67)), transforms)
+
+func _paddock() -> void:
+	var concrete := Shape.material(Color(0.40, 0.42, 0.40))
+	var roof := Shape.material(Color(0.12, 0.17, 0.19), 0.3, 0.7)
+	var glass := Shape.material(Color(0.12, 0.24, 0.29), 0.3, 0.22)
+	for index in [8, 65, 150]:
+		var forward: Vector3 = Track.tangent(samples, index)
+		var position_on_grass: Vector3 = samples[index]+forward.cross(Vector3.UP)*32
+		if _road_clearance(position_on_grass) < 24: continue
+		var building := Node3D.new()
+		building.transform = Transform3D(Basis.looking_at(forward, Vector3.UP), position_on_grass)
+		add_child(building)
+		Shape.box(building, Vector3(12, 3.4, 6), Vector3(0, 1.7, 0), concrete)
+		Shape.box(building, Vector3(12.6, 0.18, 6.6), Vector3(0, 3.5, 0), roof)
+		for bay in 4:
+			Shape.box(building, Vector3(2.3, 2.5, 0.06), Vector3(-4.5+bay*3, 1.3, 3.04), roof)
+			Shape.box(building, Vector3(2.2, 0.42, 0.07), Vector3(-4.5+bay*3, 2.8, 3.08), glass)

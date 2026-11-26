@@ -1,5 +1,6 @@
 extends Control
 
+const CompactHUD = preload("res://ui/compact_hud.gd")
 const TrackOverlay = preload("res://ui/track_overlay.gd")
 const MotionSteering = preload("res://ui/motion_steering.gd")
 enum SteeringMode { MOTION, ARROWS, SLIDE }
@@ -23,6 +24,8 @@ var graphics_quality: int = 1
 var ghost_enabled: bool = true
 var manual_gears: bool = false
 var track_guide: bool = true
+var compact_hud: bool = true
+var compact_overlay = CompactHUD.new()
 var track_overlay = TrackOverlay.new()
 var simulated: bool = false
 var paused: bool = false
@@ -65,6 +68,7 @@ func _ready() -> void:
 		fov = clampf(float(prefs.get_value("driving", "fov", 65.0)), 55, 75)
 		sensitivity = clampf(float(prefs.get_value("driving", "sensitivity", 2.5)), 1.5, 3.5)
 		volume = clampf(float(prefs.get_value("driving", "volume", 0.6)), 0, 1)
+		compact_hud = bool(prefs.get_value("driving", "compact_hud", true))
 		manual_gears = bool(prefs.get_value("driving", "manual_gears", false))
 		track_guide = bool(prefs.get_value("driving", "track_guide", true))
 		ghost_enabled = bool(prefs.get_value("driving", "ghost_enabled", true))
@@ -147,7 +151,7 @@ func _input(event: InputEvent) -> void:
 func _begin(id: int, p: Vector2) -> void:
 	_end(id)
 	if paused:
-		for i in 15:
+		for i in 16:
 			if _menu_rect(i).has_point(p):
 				_option(i)
 				return
@@ -288,6 +292,7 @@ func _option(index: int) -> void:
 			manual_gears = not manual_gears
 			car.gearbox.manual = manual_gears
 		14: track_guide = not track_guide
+		15: compact_hud = not compact_hud
 		9:
 			world.restart()
 			motion.calibrate()
@@ -297,7 +302,7 @@ func _option(index: int) -> void:
 
 func _save_preferences() -> void:
 	var prefs := ConfigFile.new()
-	for key in ["steer_assist", "tc", "steering_mode", "fov", "sensitivity", "volume", "camera_motion", "graphics_quality", "ghost_enabled", "manual_gears", "track_guide"]:
+	for key in ["steer_assist", "tc", "steering_mode", "fov", "sensitivity", "volume", "camera_motion", "graphics_quality", "ghost_enabled", "manual_gears", "track_guide", "compact_hud"]:
 		prefs.set_value("driving", key, get(key))
 	prefs.set_value("driving", "abs", abs_enabled)
 	prefs.save("user://preferences.cfg")
@@ -321,23 +326,24 @@ func _draw() -> void:
 	if paused:
 		draw_rect(Rect2(0, 0, width, 720), Color(0.015, 0.025, 0.04, 0.95))
 		_text(Vector2(width*0.5-230, 82), "PAUSA / AJUSTES", 28)
-		var labels: Array[String] = ["RETOMAR", "DIREÇÃO: "+_mode_name(), "CALIBRAR INCLINAÇÃO", "AJUDA DE DIREÇÃO: "+_on(steer_assist), "ABS: "+_on(abs_enabled), "CONTROLE DE TRAÇÃO: "+_on(tc), "CAMPO DE VISÃO: %d" % fov, "SENSIBILIDADE: %.1f" % sensitivity, "VOLUME: %d%%" % (volume*100), "REINICIAR TREINO", "CÂMERA: "+("DINÂMICA" if camera_motion else "FIXA"), "GRÁFICOS: "+["ECONÔMICO", "EQUILIBRADO", "ALTO"][graphics_quality], "FANTASMA: "+_on(ghost_enabled), "CÂMBIO: "+("MANUAL" if manual_gears else "AUTOMÁTICO"), "MAPA E CURVAS: "+_on(track_guide)]
-		for i in 15:
+		var labels: Array[String] = ["RETOMAR", "DIREÇÃO: "+_mode_name(), "CALIBRAR INCLINAÇÃO", "AJUDA DE DIREÇÃO: "+_on(steer_assist), "ABS: "+_on(abs_enabled), "CONTROLE DE TRAÇÃO: "+_on(tc), "CAMPO DE VISÃO: %d" % fov, "SENSIBILIDADE: %.1f" % sensitivity, "VOLUME: %d%%" % (volume*100), "REINICIAR TREINO", "CÂMERA: "+("DINÂMICA" if camera_motion else "FIXA"), "GRÁFICOS: "+["ECONÔMICO", "EQUILIBRADO", "ALTO"][graphics_quality], "FANTASMA: "+_on(ghost_enabled), "CÂMBIO: "+("MANUAL" if manual_gears else "AUTOMÁTICO"), "MAPA E CURVAS: "+_on(track_guide), "HUD: "+("COMPACTO" if compact_hud else "COMPLETO")]
+		for i in 16:
 			_button(_menu_rect(i), labels[i], false, 17)
 		_text(Vector2(width*0.5-230, 658), "Calibre segurando o celular na posição de pilotagem.", 15)
 		_text(Vector2(width*0.5-230, 683), "Câmbio manual: botões +/−; teclas E/C no PC.", 15, GREEN)
 		return
-	draw_style_box(skin, Rect2(20, 18, 238, 105))
-	_text(Vector2(32, 43), "CONTRA O RELÓGIO  /  VOLTA %d" % (world.laps.completed+1), 14)
-	_text(Vector2(32, 72), _clock(world.clock-world.laps.started_at) if world.laps.running else "--:--.---", 23)
-	_text(Vector2(32, 94), "Melhor  "+_clock(world.laps.best_time), 13)
-	_text(Vector2(32, 113), "Última   "+_clock(world.laps.last_time)+(" X" if world.laps.last_time > 0 and not world.laps.last_valid else ""), 13)
+	if not compact_hud:
+		draw_style_box(skin, Rect2(20, 18, 238, 105))
+		_text(Vector2(32, 43), "CONTRA O RELÓGIO  /  VOLTA %d" % (world.laps.completed+1), 14)
+		_text(Vector2(32, 72), _clock(world.clock-world.laps.started_at) if world.laps.running else "--:--.---", 23)
+		_text(Vector2(32, 94), "Melhor  "+_clock(world.laps.best_time), 13)
+		_text(Vector2(32, 113), "Última   "+_clock(world.laps.last_time)+(" X" if world.laps.last_time > 0 and not world.laps.last_valid else ""), 13)
 	_button(Rect2(width-132, 16, 116, 46), "PAUSA")
 	_button(Rect2(width-268, 16, 124, 46), "REINICIAR")
 	if not world.laps.running:
-		_text(Vector2(24, 146), "Cruze a linha para iniciar a volta.", 14)
+		_text(Vector2(width*0.5-164, 106) if compact_hud else Vector2(24, 146), "Cruze a linha para iniciar a volta.", 14)
 	elif not world.laps.valid:
-		_text(Vector2(24, 146), "VOLTA INVÁLIDA / "+world.laps.reason, 14, Color(1, 0.6, 0.4))
+		_text(Vector2(width*0.5-164, 106) if compact_hud else Vector2(24, 146), "VOLTA INVÁLIDA / "+world.laps.reason, 14, Color(1, 0.6, 0.4))
 	_button(_mode_rect(), _mode_name(), false, 16)
 	if steering_mode == SteeringMode.MOTION:
 		_button(_calibrate_rect(), "CALIBRAR", false, 15)
@@ -350,18 +356,21 @@ func _draw() -> void:
 		_arrow(false)
 		_arrow(true)
 	var center_x: float = width*0.5
-	draw_style_box(skin, Rect2(center_x-90, 18, 180, 98))
-	_text(Vector2(center_x-70, 60), "%3d" % (car.linear_velocity.length()*3.6), 36)
-	_text(Vector2(center_x+20, 56), ("R" if reverse else str(car.gearbox.gear))+(" M" if manual_gears else " A"), 24, GREEN)
-	_text(Vector2(center_x-62, 79), "km/h   %4d rpm" % car.gearbox.rpm, 13)
-	draw_rect(Rect2(center_x-72, 90, 144, 4), Color(0.3, 0.33, 0.36))
-	draw_rect(Rect2(center_x-72, 90, 144*clampf((car.gearbox.rpm-900)/6000.0, 0, 1), 4), Color.RED if car.gearbox.rpm > 6200 else GREEN)
-	_text(Vector2(center_x-62, 110), "TC %s   ABS %s" % [("*" if car.tc_active else _on(tc)), ("*" if car.abs_active else _on(abs_enabled))], 12)
+	if not compact_hud:
+		draw_style_box(skin, Rect2(center_x-90, 18, 180, 98))
+		_text(Vector2(center_x-70, 60), "%3d" % (car.linear_velocity.length()*3.6), 36)
+		_text(Vector2(center_x+20, 56), ("R" if reverse else str(car.gearbox.gear))+(" M" if manual_gears else " A"), 24, GREEN)
+		_text(Vector2(center_x-62, 79), "km/h   %4d rpm" % car.gearbox.rpm, 13)
+		draw_rect(Rect2(center_x-72, 90, 144, 4), Color(0.3, 0.33, 0.36))
+		draw_rect(Rect2(center_x-72, 90, 144*clampf((car.gearbox.rpm-900)/6000.0, 0, 1), 4), Color.RED if car.gearbox.rpm > 6200 else GREEN)
+		_text(Vector2(center_x-62, 110), "TC %s   ABS %s" % [("*" if car.tc_active else _on(tc)), ("*" if car.abs_active else _on(abs_enabled))], 12)
+		_timing_hud()
+		_feedback_hud(center_x)
+	else:
+		compact_overlay.draw(self)
+	if track_guide: track_overlay.draw(self, compact_hud)
 	if car.gearbox.overrev_block_left > 0:
 		_text(Vector2(center_x-112, 138), "GIRO ALTO: REDUÇÃO BLOQUEADA", 12, Color(1, 0.7, 0.35))
-	if track_guide: track_overlay.draw(self)
-	_timing_hud()
-	_feedback_hud(center_x)
 	_pedal(_gas_rect(), throttle, GREEN, "ACELERAR")
 	_pedal(_brake_rect(), brake, Color(0.85, 0.25, 0.2), "FREIO")
 	if manual_gears:

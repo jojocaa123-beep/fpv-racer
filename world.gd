@@ -61,7 +61,7 @@ func _ready() -> void:
 	settings.ambient_light_energy = 0.6
 	settings.fog_enabled = true
 	settings.fog_light_color = Color(0.65, 0.74, 0.78)
-	settings.fog_density = 0.0015
+	settings.fog_density = 0.00065
 	env.environment = settings
 	add_child(env)
 	sun = DirectionalLight3D.new()
@@ -72,11 +72,11 @@ func _ready() -> void:
 	sun.directional_shadow_mode = DirectionalLight3D.SHADOW_ORTHOGONAL
 	sun.directional_shadow_max_distance = 110
 	add_child(sun)
-	var grass := CircuitVisuals.surface(Color(0.25, 0.34, 0.18), true)
-	var road := CircuitVisuals.surface(Color(0.18, 0.19, 0.2), false)
+	var grass := CircuitVisuals.surface(Color(0.19, 0.26, 0.12), true)
+	var road := CircuitVisuals.surface(Color(0.13, 0.14, 0.15), false)
 	road.cull_mode = BaseMaterial3D.CULL_DISABLED
 	var white := _material(Color(0.86, 0.87, 0.79))
-	var red := _material(Color(0.64, 0.16, 0.11))
+	var red := _material(Color(0.45, 0.13, 0.09))
 	_static_box("Grass", Vector3(1600, 0.2, 1600), Vector3(0, -0.1, 0), grass, 0.58)
 	_make_road(road, white, red)
 	var scenery := CircuitVisuals.new()

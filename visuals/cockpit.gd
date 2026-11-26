@@ -1,5 +1,6 @@
 extends Node3D
 
+const Finish = preload("res://visuals/finish.gd")
 const HeadMotion = preload("res://visuals/head_motion.gd")
 const EYE := Vector3(-0.34, 1.33, 0.28)
 const VIEW_ANGLES := Vector3(deg_to_rad(-3), 0, 0)
@@ -16,21 +17,25 @@ var led_off: StandardMaterial3D
 
 func _ready() -> void:
 	var paint := material(Color(0.11, 0.25, 0.32), 0.3, 0.45)
-	var rubber := material(Color(0.025, 0.029, 0.033))
-	var dashboard := material(Color(0.055, 0.062, 0.069))
+	var rubber := Finish.grained(Color(0.032, 0.038, 0.043), 118)
+	var dashboard := Finish.grained(Color(0.075, 0.083, 0.09), 415)
 	var trim := material(Color(0.24, 0.27, 0.29), 0.65, 0.35)
 	var silver := material(Color(0.57, 0.61, 0.64), 0.75, 0.3)
 	var black := material(Color(0.008, 0.012, 0.015))
 	box(self, Vector3(1.7, 0.40, 3.8), Vector3(0, 0.62, 0), paint)
 	box(self, Vector3(1.65, 0.07, 1.5), Vector3(0, 0.88, -1.17), paint)
-	box(self, Vector3(1.63, 0.13, 0.53), Vector3(0, 0.96, -0.62), dashboard)
-	box(self, Vector3(0.58, 0.24, 0.14), Vector3(-0.34, 1.10, -0.61), rubber)
-	box(self, Vector3(1.65, 0.065, 1.55), Vector3(0, 1.73, 0.55), dashboard)
+	Finish.panel(self, Vector3(1.64, 0.14, 0.50), Vector3(0, 0.94, -0.62), 0.065, dashboard)
+	Finish.panel(self, Vector3(0.61, 0.265, 0.14), Vector3(-0.34, 1.10, -0.61), 0.075, rubber)
+	box(self, Vector3(1.65, 0.065, 1.75), Vector3(0, 1.73, 0.475), dashboard)
 	for side in [-1, 1]:
 		box(self, Vector3(0.07, 0.24, 1.85), Vector3(side*0.81, 0.88, 0.36), dashboard)
 		box(self, Vector3(0.04, 0.022, 1.6), Vector3(side*0.76, 1.015, 0.4), trim)
-		beam(self, Vector3(side*0.80, 0.98, -0.72), Vector3(side*0.80, 1.73, -0.23), 0.035, rubber)
+		beam(self, Vector3(side*0.80, 0.98, -0.76), Vector3(side*0.82, 1.73, -0.40), 0.024, rubber)
 		box(self, Vector3(0.055, 0.7, 0.055), Vector3(side*0.79, 1.36, 1.0), rubber)
+	var seam := material(Color(0.18, 0.25, 0.28))
+	for side in [-1, 1]:
+		box(self, Vector3(0.016, 0.005, 1.1), Vector3(side*0.52, 0.924, -1.17), paint)
+	box(self, Vector3(1.5, 0.008, 0.008), Vector3(0, 0.99, -0.36), seam)
 	# Cluster orientado para o piloto, atras do volante.
 	speed_needle = dial(Vector3(-0.47, 1.11, -0.515), 240, "km/h", false)
 	rpm_needle = dial(Vector3(-0.21, 1.11, -0.515), 8, "x1000", true)
@@ -43,7 +48,7 @@ func _ready() -> void:
 		var led := cylinder(self, 0.006, 0.006, Vector3(-0.43+i*0.03, 1.235, -0.515), led_off)
 		shift_lights.append(led)
 	# Console e saidas de ar.
-	box(self, Vector3(0.25, 0.15, 0.12), Vector3(0.14, 1.025, -0.55), trim)
+	Finish.panel(self, Vector3(0.27, 0.16, 0.12), Vector3(0.14, 1.025, -0.55), 0.032, trim)
 	box(self, Vector3(0.23, 0.13, 0.13), Vector3(0.14, 1.025, -0.535), black)
 	for i in 6:
 		box(self, Vector3(0.21, 0.007, 0.015), Vector3(0.14, 0.976+i*0.02, -0.455), dashboard)
@@ -76,6 +81,8 @@ func _ready() -> void:
 	for angle in [-PI/2, PI/2, PI]:
 		var spoke := box(steering_wheel, Vector3(0.035, 0.13, 0.015), Vector3(0, 0.085, 0.008).rotated(Vector3.FORWARD, angle), trim)
 		spoke.rotation.z = -angle
+	for side in [-1, 1]:
+		Finish.panel(steering_wheel, Vector3(0.031, 0.09, 0.028), Vector3(side*0.161, 0.0, 0.015), 0.013, dashboard)
 	cylinder(steering_wheel, 0.052, 0.025, Vector3(0, 0, 0.025), black)
 	label(steering_wheel, "FPV", Vector3(0, 0, 0.045), 32, 0.0010, Color(0.8, 0.84, 0.86))
 	box(steering_wheel, Vector3(0.012, 0.022, 0.018), Vector3(0, 0.166, 0.012), material(Color(0.9, 0.67, 0.12)))
@@ -123,7 +130,10 @@ func dial(at: Vector3, maximum: int, caption: String, red_zone: bool) -> Node3D:
 	var needle := Node3D.new()
 	needle.rotation.z = deg_to_rad(130)
 	group.add_child(needle)
-	box(needle, Vector3(0.0035, 0.083, 0.003), Vector3(0, 0.032, 0.025), material(Color(0.96, 0.25, 0.12)))
+	var needle_material := material(Color(0.96, 0.25, 0.12))
+	needle_material.emission_enabled = true
+	needle_material.emission = Color(0.65, 0.1, 0.04)
+	box(needle, Vector3(0.0035, 0.083, 0.003), Vector3(0, 0.032, 0.025), needle_material)
 	cylinder(group, 0.008, 0.008, Vector3(0, 0, 0.028), material(Color(0.65, 0.7, 0.72)))
 	for item in group.find_children("*", "MeshInstance3D", true, false):
 		item.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
